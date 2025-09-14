@@ -1,0 +1,39 @@
+services:
+  mongodb:
+    image: mongo:7
+    restart: always
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodata:/data/db
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: revelai
+      MONGO_INITDB_ROOT_PASSWORD: revelai
+      MONGO_INITDB_DATABASE: revelai
+
+  redis:
+    image: redis:8-alpine
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redisdata:/data
+
+  mongo-express:
+    image: mongo-express
+    restart: always
+    environment:
+      ME_CONFIG_MONGODB_SERVER: mongodb
+      ME_CONFIG_MONGODB_PORT: 27017
+      ME_CONFIG_MONGODB_ADMINUSERNAME: revelai
+      ME_CONFIG_MONGODB_ADMINPASSWORD: revelai
+      ME_CONFIG_MONGODB_AUTH_DATABASE: admin
+      MONGO_INITDB_DATABASE: revelai
+    ports:
+      - "8081:8081"
+    depends_on:
+      - mongodb
+
+volumes:
+  mongodata:
+  redisdata:
