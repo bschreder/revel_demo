@@ -1,0 +1,59 @@
+{
+  "name": "revel_demo",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc",
+    "build:clean": "npm run clean && npm run build",
+    "build:complete": "npm run lint && npm run build && node dist/index.js",
+    "clean": "rimraf dist",
+    "start": "node dist/src/index.js",
+    "dev": "nodemon --watch src --exec ts-node src/index.ts",
+    "lint": "eslint src tests --ext .ts --fix",
+    "lint:strict": "eslint src tests --ext .ts --max-warnings=0 --fix",
+    "test": "npm run build && jest --config jest.config.mjs --detectOpenHandles --watch",
+    "test:coverage": "jest --config jest.config.mjs --coverage",
+    "test:ci": "jest --config jest.config.mjs --coverage --runInBand"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bschreder/revel_demo.git"
+  },
+  "keywords": [],
+  "author": "Brian Schreder",
+  "license": "MIT",
+  "type": "module",
+  "imports": {
+    "#src/*": "./dist/src/*",
+    "#test/*": "./dist/tests/*"
+  },
+  "bugs": {
+    "url": "https://github.com/bschreder/revel_demo/issues"
+  },
+  "homepage": "https://github.com/bschreder/revel_demo#readme",
+  "dependencies": {
+    "bullmq": "^5.58.5",
+    "dotenv": "^17.2.2",
+    "fastify": "^5.6.0",
+    "fastify-type-provider-zod": "^6.0.0",
+    "mongoose": "^8.18.1",
+    "zod": "^4.1.8"
+  },
+  "devDependencies": {
+    "@types/jest": "^30.0.0",
+    "@types/node": "^24.4.0",
+    "eslint": "^9.35.0",
+    "eslint-plugin-jest": "^29.0.1",
+    "jest": "^30.1.3",
+    "mongodb-memory-server": "^10.2.1",
+    "nodemon": "^3.1.10",
+    "prettier": "^3.6.2",
+    "rimraf": "^6.0.1",
+    "ts-jest": "^29.4.1",
+    "ts-jest-resolver": "^2.0.1",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.2",
+    "typescript-eslint": "^8.43.0"
+  }
+}

@@ -1,0 +1,96 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Revel Demo API",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/journeys": {
+      "post": {
+        "summary": "Create a new journey definition",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Journey"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Journey created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "journeyId": { "type": "string" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Journey": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "name": { "type": "string" },
+          "start_node_id": { "type": "string" },
+          "nodes": {
+            "type": "array",
+            "items": {
+              "oneOf": [
+                { "$ref": "#/components/schemas/ActionNode" },
+                { "$ref": "#/components/schemas/DelayNode" },
+                { "$ref": "#/components/schemas/ConditionalNode" }
+              ]
+            }
+          }
+        }
+      },
+      "ActionNode": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "type": { "type": "string", "enum": ["MESSAGE"] },
+          "message": { "type": "string" },
+          "next_node_id": { "type": ["string", "null"] }
+        }
+      },
+      "DelayNode": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "type": { "type": "string", "enum": ["DELAY"] },
+          "duration_seconds": { "type": "number" },
+          "next_node_id": { "type": ["string", "null"] }
+        }
+      },
+      "ConditionalNode": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "type": { "type": "string", "enum": ["CONDITIONAL"] },
+          "condition": {
+            "type": "object",
+            "properties": {
+              "field": { "type": "string" },
+              "operator": { "type": "string" },
+              "value": {}
+            }
+          },
+          "on_true_next_node_id": { "type": ["string", "null"] },
+          "on_false_next_node_id": { "type": ["string", "null"] }
+        }
+      }
+    }
+  }
+}

@@ -9,6 +9,7 @@ This is a list of technologies and their websites
 - **Redis:** https://redis.io/docs/latest/develop/
 - **Pino:** https://github.com/pinojs/pino/tree/maintypescript
 - **Zod:** https://zod.dev/
-- **Nodejs Testing:** https://nodejs.org/api/test.html
+- **Jest Testing:** https://jestjs.io/docs/getting-started
 - **Rest Client:** https://github.com/Huachao/vscode-restclient
 - **ESLint:** https://eslint.org/docs/latest/
+- **MongodbMemoryServer:** https://github.com/typegoose/mongodb-memory-server

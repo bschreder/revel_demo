@@ -1,0 +1,16 @@
+{
+    "chat.tools.terminal.autoApprove": {
+    "npm run lint": true,
+    "npm run build": true,
+    "npm start": true,
+    "npm test": true
+  },
+  "cSpell.words": [
+    "bullmq",
+    "FASTIFY",
+    "healthcheck",
+    "revelai",
+    "Schreder",
+    "tsparser"
+  ]
+}

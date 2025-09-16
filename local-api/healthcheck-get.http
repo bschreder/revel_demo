@@ -1,0 +1,12 @@
+### GET /healthcheck
+
+GET http://localhost:5000/healthcheck
+Accept: application/json
+
+# Example response
+# HTTP/1.1 200 OK
+# Content-Type: application/json
+#
+# {
+#   "status": "ok"
+# }

@@ -1,6 +1,6 @@
 # Project Overview
 
-This is a typescript nodejs application that has a RESTful API using Fastify, a standalone MongoDB database, a lightweight bullmq queue with a standalone Redis instance. MongoDB (port: 27017) and Redis (port: 6379) are locally running in docker containers.
+This is a typescript ESM nodejs application that has a RESTful API using Fastify, a standalone MongoDB database, a lightweight bullmq queue with a standalone Redis instance. MongoDB (port: 27017) and Redis (port: 6379) are locally running in docker containers.
 The project is built by a staff engineer use best nodejs and npm practices.
 
 ## Naming and Style Conventions
@@ -15,7 +15,7 @@ The project is built by a staff engineer use best nodejs and npm practices.
 
 ## Preferred Technologies
 
-- Use `fetch` for all API calls; do not use libraries like `axios`.
+- Use `fetch` for all API calls; do not use libraries like `axios` or `node-fetch`.
 - Use mongoose library to access the mongodb
 - Use bullmq for async queue processing to access redis key-value store
 - Use Fastify framework for RESTful API
@@ -48,7 +48,7 @@ The project is built by a staff engineer use best nodejs and npm practices.
 
 - **Coverage:** All new code must be accompanied by unit tests. Aim for at least 90% code coverage for critical components.
 - **Structure:** Follow the "Arrange-Act-Assert" (AAA) pattern for all tests, but do not place Arrange-Act-Assert comments in test files
-- **Framework:** Use Nodejs testing framework for all tests. For unit tests, mock external dependencies (e.g., API calls) using `mock(<dependency>)`. For integration tests, use `fetch` to make real HTTP requests to the Fastify server.
+- **Framework:** Use Jest testing framework for all tests. For unit tests, mock external dependencies (e.g., API calls) using `jest.mock(<dependency>)`. For integration tests, use `fetch` to make real HTTP requests to the Fastify server.
 - **Folder:** Store tests in a parallel structure under `/tests` (e.g., `/tests/features/users`).
 - **Naming:** Use `.test.ts` suffix for unit test files (e.g., `user-service.test.ts`) and `.integration.test.ts` for integration test files (e.g., `user-service.integration.test.ts`).
 - **Types:** Use TypeScript for all test files.

@@ -1,0 +1,89 @@
+### POST /journeys
+
+#
+# MESSAGE request
+POST http://localhost:5000/journeys
+Content-Type: application/json
+
+{
+  "id": "j1",
+  "name": "Test Journey",
+  "start_node_id": "node1",
+  "nodes": [
+    {
+      "id": "node1",
+      "type": "MESSAGE",
+      "message": "Hello!",
+      "next_node_id": null
+    }
+  ]
+}
+
+# Example response
+# HTTP/1.1 201 Created
+# Content-Type: application/json
+
+# {
+#   "journeyId": "abc123dd592801-2ac6-4c65-9f7d-e7c345342613"
+# }
+
+
+###
+# DELAY request
+POST http://localhost:5000/journeys
+Content-Type: application/json
+
+{
+  "id": "j2",
+  "name": "Test Journey",
+  "start_node_id": "node1",
+  "nodes": [
+    {
+      "id": "node1",
+      "type": "DELAY",
+      "duration_seconds": 5,
+      "next_node_id": null
+    }
+  ]
+}
+
+# Example response
+# HTTP/1.1 201 Created
+# Content-Type: application/json
+
+# {
+#   "journeyId": "db6d0cd3-7108-4736-bf38-cb1e594a9cf6"
+# }
+
+
+###
+# CONDITIONAL request
+POST http://localhost:5000/journeys
+Content-Type: application/json
+
+{
+  "id": "j3",
+  "name": "Test Journey",
+  "start_node_id": "node1",
+  "nodes": [
+    {
+      "id": "node1",
+      "type": "CONDITIONAL",
+      "condition": {
+        "field": "patient.age",
+        "operator": ">",
+        "value": 18
+      },
+      "on_true_next_node_id":  null,
+      "on_false_next_node_id": null
+    }
+  ]
+}
+
+# Example response
+# HTTP/1.1 201 Created
+# Content-Type: application/json
+
+# {
+#   "journeyId": "eb26a2ba-09dd-4168-82af-0be04e297661"
+# }
