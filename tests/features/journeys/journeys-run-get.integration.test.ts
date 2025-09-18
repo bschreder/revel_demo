@@ -1,9 +1,9 @@
 import dotenv from 'dotenv';
 import { FastifyInstance } from 'fastify';
 import { startServer } from '#src/server.js';
-import { connect, isConnected, disconnect } from '#src/db/mongodb-interface.js';
+import { connect, isConnected } from '#src/db/mongodb-interface.js';
 import { JourneyModel } from '#src/db/mongodb-schema.js';
-import { closeQueue } from '#src/executor/queue.js';
+import { teardownTestInfra } from '#test/utils/test-teardown.js';
 import { ConnectOptions } from 'mongoose';
 
 describe('GET /journeys/runs/:runId (integration)', () => {
@@ -29,9 +29,7 @@ describe('GET /journeys/runs/:runId (integration)', () => {
   });
 
   afterAll(async () => {
-    await fastifyInstance.close();
-    await closeQueue();
-    await disconnect();
+    await teardownTestInfra(fastifyInstance);
   });
 
   test('should return 200 and run status for a valid runId', async () => {
@@ -85,7 +83,7 @@ describe('GET /journeys/runs/:runId (integration)', () => {
   });
 
   test('should return 404 for a non-existent runId', async () => {
-    const res = await fetch(`${BASE_URL}/journeys/runs/notfound`);
+    const res = await fetch(`${BASE_URL}/journeys/runs/00000000-0000-0000-0000-000000000000`);
     expect(res.status).toBe(404);
     const data = await res.json();
     expect(data).toEqual({ error: 'Run not found' });

@@ -1,11 +1,13 @@
 import { FastifyInstance } from 'fastify';
-import { getJourneyRunStatus, postJourney, triggerJourney } from '#src/controllers/journeys-controller.js';
-import { journeySchema, journeyIdResponseSchema, jobNodeResponseSchema } from '#src/models/journey-schema.js';
+import { getJourneyRunStatus, postJourney, triggerJourney, getJourneyRunTrace } from '#src/controllers/journeys-controller.js';
+import { journeySchema, journeyIdResponseSchema, jobNodeResponseSchema, journeyIdParamsSchema, runIdParamsSchema } from '#src/models/journey-schema.js';
+import { runTraceResponseSchema } from '#src/models/trace-schema.js';
 import { triggerJourneyRequestSchema, triggerJourneyResponseSchema } from '#src/models/journey-schema.js';
 
 
 /** Register journey routes 
- * @param fastify Fastify instance
+ * @param {FastifyInstance} fastify Fastify instance
+ * @returns {Promise<void>}
 */
 export default async function journeysRoutes(fastify: FastifyInstance): Promise<void> {
   /**
@@ -27,6 +29,7 @@ export default async function journeysRoutes(fastify: FastifyInstance): Promise<
    */
   fastify.post('/journeys/:journeyId/trigger', {
     schema: {
+      params: journeyIdParamsSchema,
       body: triggerJourneyRequestSchema,
       response: {
         202: triggerJourneyResponseSchema
@@ -40,9 +43,23 @@ export default async function journeysRoutes(fastify: FastifyInstance): Promise<
    */
   fastify.get('/journeys/runs/:runId', {
     schema: {
+      params: runIdParamsSchema,
       response: {
         200: jobNodeResponseSchema
       }
     }
   }, getJourneyRunStatus);
+
+  /**
+   * GET /journeys/runs/:runId/trace
+   * Fetch execution trace of a specific journey run
+   */
+  fastify.get('/journeys/runs/:runId/trace', {
+    schema: {
+      params: runIdParamsSchema,
+      response: {
+        200: runTraceResponseSchema
+      }
+    }
+  }, getJourneyRunTrace);
 }

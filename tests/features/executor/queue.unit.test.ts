@@ -30,7 +30,7 @@ describe('queue.ts', () => {
     const queue = createQueue();
     expect(queue).toBeDefined();
     expect(queue.name).toBe('journey');
-    if (prev !== undefined) process.env.BULLMQ_QUEUE_NAME = prev; else delete process.env.BULLMQ_QUEUE_NAME;
+    if (prev !== undefined) {process.env.BULLMQ_QUEUE_NAME = prev;} else {delete process.env.BULLMQ_QUEUE_NAME;}
   });
 
   test('getQueue returns the same Queue instance', () => {

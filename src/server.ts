@@ -10,18 +10,20 @@ import { authMiddleware } from './middleware/auth-middleware.js';
  * @returns {Fastify.FastifyInstance} Configured Fastify server
  */
 export function buildServer(): FastifyInstance {
-  // const fastify = Fastify({ logger: true });
-  const fastify = Fastify({logger: { 
-    transport:{target: 'pino-pretty',
+  const fastify = Fastify({ logger: {
+    transport: {
+      target: 'pino-pretty',
       options: {
         translateTime: 'HH:MM:ss Z',
         ignore: 'pid,hostname',
-      },}
-  }});
-  // Set up Zod type provider BEFORE routes are registered
+      }
+    }
+  } });
+
   fastify.setValidatorCompiler(validatorCompiler);
   fastify.setSerializerCompiler(serializerCompiler);
   fastify.withTypeProvider<ZodTypeProvider>();
+
   fastify.addHook('preHandler', authMiddleware);
   fastify.register(journeysRoutes);
   fastify.register(healthcheckRoutes);
@@ -30,8 +32,8 @@ export function buildServer(): FastifyInstance {
 
 /**
  * Start the Fastify server.
- * @param port Port number to listen on (default: 5000)
- * @returns Fastify server instance
+ * @param {number} port Port number to listen on (default: 5000)
+ * @returns {Promise<FastifyInstance>} Fastify server instance
  */
 export async function startServer(port: number = 5000): Promise<FastifyInstance> {
   const fastify = buildServer();

@@ -1,10 +1,11 @@
 import dotenv from 'dotenv';
 import { FastifyInstance } from 'fastify';
 import { startServer } from '#src/server.js';
-import { connect, isConnected, disconnect } from '#src/db/mongodb-interface.js';
+import { connect, isConnected } from '#src/db/mongodb-interface.js';
 import { JourneyModel } from '#src/db/mongodb-schema.js';
 import type { ConnectOptions } from 'mongoose';
-import { createQueue, closeQueue } from '#src/executor/queue.js';
+import { createQueue } from '#src/executor/queue.js';
+import { teardownTestInfra } from '#test/utils/test-teardown.js';
 
 const e2e = (process.env.E2E_WORKER_TESTS === '1') ? describe : describe.skip;
 
@@ -32,9 +33,7 @@ e2e('E2E: Trigger non-existent journey', () => {
   });
 
   afterAll(async () => {
-    await closeQueue();
-    await fastifyInstance.close();
-    await disconnect();
+    await teardownTestInfra(fastifyInstance);
   });
 
   test('returns 404 or 500 as per current behavior with error payload', async () => {

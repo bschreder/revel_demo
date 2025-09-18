@@ -1,6 +1,6 @@
 import { actionProcessor, delayProcessor, conditionalProcessor } from '#src/executor/processor.js';
 import { Job } from 'bullmq';
-import { getJourneyById } from '#src/db/mongodb-interface.js';
+import { getJourneyById, beginTraceStep, finishTraceStep, completeRunTrace } from '#src/db/mongodb-interface.js';
 import { addJob } from '#src/executor/job.js';
 
 jest.mock('#src/db/mongodb-interface.js');
@@ -139,5 +139,69 @@ describe('processor more branches (merged)', () => {
     const job = { data: { journeyId: 'journey-1', currentNodeId: 'c3', patientContext: { id: 'p1', age: 20, language: 'en', condition: 'hip' } } } as unknown as Job;
     await conditionalProcessor(job);
     expect(addJob).toHaveBeenCalledWith(expect.objectContaining({ currentNodeId: 'a1' }));
+  });
+});
+
+// Additional targeted coverage to increase branches/statements
+describe('processor additional coverage', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  test('conditionalProcessor supports == operator and enqueues next', async () => {
+    const journey = {
+      id: 'j-x',
+      nodes: [
+        { id: 'condEq', type: 'CONDITIONAL', condition: { field: 'patient.age', operator: '==', value: 42 }, on_true_next_node_id: 'nTrue', on_false_next_node_id: 'nFalse' },
+        { id: 'nTrue', type: 'MESSAGE', message: 'T', next_node_id: null },
+        { id: 'nFalse', type: 'DELAY', duration_seconds: 1, next_node_id: null },
+      ],
+    };
+    (getJourneyById as jest.Mock).mockResolvedValue(journey);
+    (addJob as jest.Mock).mockResolvedValue('job-1');
+
+    const job = { data: { runId: 'run-1', journeyId: 'j-x', currentNodeId: 'condEq', patientContext: { id: 'p1', age: 42, language: 'en', condition: 'hip' } } } as unknown as Job;
+    await conditionalProcessor(job);
+    expect(addJob).toHaveBeenCalledWith(expect.objectContaining({ currentNodeId: 'nTrue', journeyId: 'j-x', runId: 'run-1' }));
+  });
+
+  test('conditionalProcessor < false path enqueues on_false_next_node_id', async () => {
+    const journey = {
+      id: 'j-y',
+      nodes: [
+        { id: 'condLt', type: 'CONDITIONAL', condition: { field: 'patient.age', operator: '<', value: 10 }, on_true_next_node_id: 'A', on_false_next_node_id: 'B' },
+        { id: 'A', type: 'MESSAGE', message: 'A', next_node_id: null },
+        { id: 'B', type: 'DELAY', duration_seconds: 2, next_node_id: null },
+      ],
+    };
+    (getJourneyById as jest.Mock).mockResolvedValue(journey);
+    (addJob as jest.Mock).mockResolvedValue('job-2');
+
+    const job = { data: { runId: 'run-2', journeyId: 'j-y', currentNodeId: 'condLt', patientContext: { id: 'p2', age: 20, language: 'en', condition: 'hip' } } } as unknown as Job;
+    await conditionalProcessor(job);
+    expect(addJob).toHaveBeenCalledWith(expect.objectContaining({ currentNodeId: 'B' }));
+  });
+
+  test('actionProcessor wrong node type throws type guard error', async () => {
+    const journey = {
+      id: 'j-z',
+      nodes: [ { id: 'notAction', type: 'DELAY', duration_seconds: 1, next_node_id: null } ],
+    };
+    (getJourneyById as jest.Mock).mockResolvedValue(journey);
+    const job = { data: { runId: 'r-3', journeyId: 'j-z', currentNodeId: 'notAction', patientContext: { id: 'p3', age: 50, language: 'en', condition: 'hip' } } } as unknown as Job;
+    await expect(actionProcessor(job)).rejects.toThrow('not found or wrong type');
+  });
+
+  test('processors call trace helpers appropriately on complete', async () => {
+    const journey = {
+      id: 'j-t',
+      nodes: [ { id: 'a1', type: 'MESSAGE', message: 'Hi', next_node_id: null } ],
+    };
+    (getJourneyById as jest.Mock).mockResolvedValue(journey);
+    const job = { data: { runId: 'r-4', journeyId: 'j-t', currentNodeId: 'a1', patientContext: { id: 'p4', age: 60, language: 'en', condition: 'hip' } } } as unknown as Job;
+    await actionProcessor(job);
+    expect(beginTraceStep).toHaveBeenCalledWith('r-4', expect.objectContaining({ nodeId: 'a1', type: 'MESSAGE' }));
+    expect(finishTraceStep).toHaveBeenCalledWith('r-4', 'a1', expect.any(Object));
+    expect(completeRunTrace).toHaveBeenCalledWith('r-4', 'completed');
   });
 });

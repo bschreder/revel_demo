@@ -4,12 +4,50 @@
 
 - All journeys are self contained => one journey will not call the node in another journey
 - A journey starts when trigger endpoint is called
+- A DelayNode's delay occurs before the nodes execution
+
+## Demo Video
+
+[![Watch the demo](docs/demo_journey-thumb.png)](docs/demo_journey.mp4)
+
+## Quick start: run app and tests
+
+1. Start infra (MongoDB + Redis). Easiest is the compose file under `containers/`.
+   - Start: `docker compose -f containers/docker-compose.yml up -d`
+   - Stop: `docker compose -f containers/docker-compose.yml down --remove-orphans -v`
+2. Install dependencies: `npm ci`
+3. Build the project: `npm run build`
+4. Run unit tests: `npm run test:unit`
+5. (Optional) Run all tests with coverage: `npm run test:ci`
+6. Start the API locally: `npm start` (server listens on port 5000 by default)
+
+Notes
+
+- For environment variables and additional options, see the Usage section below.
+- Try the requests under `local-api/` (VS Code REST Client) once the server is running.
 
 ## Architecture and Structure
 
 ### Key Technologies
 
+- Fastify (REST API)
+- Mongoose (MongoDB)
+- BullMQ (Redis-backed job queue)
+- Zod + fastify-type-provider-zod (runtime validation and typed routes)
+- Jest (unit, integration, and e2e tests)
+
 ### Folder Structure
+
+- `src/`
+  - `routes/` Fastify route definitions
+  - `controllers/` HTTP handlers
+  - `services/` business logic (triggering runs, querying status)
+  - `executor/` BullMQ queue, worker, processor, and job helpers
+  - `db/` Mongoose connection and query helpers, schemas
+  - `models/` TypeScript interfaces and Zod schemas
+  - `middleware/` Fastify middleware
+- `tests/` mirrors `src/` with unit, integration, and e2e specs
+- `docs/openapi.json` OpenAPI v3 spec for the public API
 
 ## Usage
 
@@ -72,3 +110,5 @@ Notes:
 - All code is TypeScript and ESM.
 - Logging uses `pino`.
 - All public APIs are documented with JSDoc.
+- Input validation: All payloads and params are validated with Zod; Fastify uses the Zod type provider for end-to-end typing.
+- API docs: When endpoints change, update `docs/openapi.json` and the examples under `local-api/`.

@@ -1,12 +1,18 @@
 {
   "chat.tools.terminal.autoApprove": {
     "npm run lint": true,
+    "npm run lint:strict": true,
     "npm run build": true,
     "npm start": true,
     "npm test": true,
+    "npm run test:unit": true,
+    "npm run test:integration": true,
+    "npm run test:e2e": true,
+    "npm run test:ci": true,
     "npm run test:coverage": true,
-    "npm run lint:strict": true
+    "pwsh.exe": true
   },
+  "chat.agent.maxRequests": 50,
   "cSpell.words": [
     "bullmq",
     "FASTIFY",

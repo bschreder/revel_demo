@@ -1,8 +1,8 @@
 import dotenv from 'dotenv';
 import { FastifyInstance } from 'fastify';
 import { startServer } from '#src/server.js';
-import { closeQueue } from '#src/executor/queue.js';
-import { connect, isConnected, disconnect } from '#src/db/mongodb-interface.js';
+import { connect, isConnected } from '#src/db/mongodb-interface.js';
+import { teardownTestInfra } from '#test/utils/test-teardown.js';
 import { ConnectOptions } from 'mongoose';
 
 
@@ -29,9 +29,7 @@ describe('POST /journeys/:journeyId/trigger (integration)', () => {
   });
 
   afterAll(async () => {
-    await fastifyInstance.close();
-    await closeQueue();
-    await disconnect();
+    await teardownTestInfra(fastifyInstance);
   });
 
   test('should return 202 and runId for valid request', async () => {

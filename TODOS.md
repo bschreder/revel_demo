@@ -1,11 +1,6 @@
 # TODOs to enhance the project
 
 
-## Final video
-
-- explain postgres vs mongodb decision
-- how to setup, build, and use application
-
 ## Feature Enhancements
 
 - Complete authentication middleware => OAuth
@@ -14,11 +9,9 @@
 
 - Pass logger into controller
 
-- Fix lint errors
+- Add indexes to journey and trace collections
 
 - Improve endpoint completeness.  Add authenticated GET/LIST/UPDATE/DELETE endpoints as needed to help manage journeys (view/list/update/delete) operationally.
-
-- Persist run history and node transitions in MongoDb to improve observability and auditability.
 
 ## Security Enhancements
 

@@ -1,9 +1,9 @@
-import { Worker, QueueEvents, WorkerOptions, Job } from 'bullmq';
+import { Worker, QueueEvents } from 'bullmq';
+import type { WorkerOptions, Job } from 'bullmq';
 import { getRedisConfig } from '#src/db/redis-interface.js';
 import pino from 'pino';
 import { JobName } from './job.js';
 import { actionProcessor, delayProcessor, conditionalProcessor } from './processor.js';
-// Removed dependency on getQueueName to allow standalone worker start
 
 const logger = pino();
 let workerInstance: Worker | null = null;
@@ -12,14 +12,14 @@ let queueEventsInstance: QueueEvents | null = null;
 /**
  * Starts a BullMQ Worker to process jobs from the queue.
  * Selects the processor based on the job name.
+ * @param {string} [queueName] Optional queue name to override the default from env
  * @returns {Worker} BullMQ Worker instance
  */
 export function startWorker(queueName?: string): Worker {
   const redisConfig = getRedisConfig();
   const options: WorkerOptions = { connection: redisConfig };
   const effectiveQueueName = queueName || process.env.BULLMQ_QUEUE_NAME || 'journey';
-
-  const processorMap: Record<JobName, (job: Job) => Promise<string>> = {
+  const processorMap = {
     action: actionProcessor,
     delay: delayProcessor,
     conditional: conditionalProcessor

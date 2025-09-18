@@ -9,6 +9,10 @@ dotenv.config();
 
 const PORT = process.env.FASTIFY_PORT ? parseInt(process.env.FASTIFY_PORT, 10) : 5000;
 
+/**
+ * Main entry point to start infrastructure services.
+ * @returns {Promise<void>}
+ */
 async function main(): Promise<void> {
   // Connect to MongoDB
   if (!isConnected()) {
@@ -35,6 +39,9 @@ async function main(): Promise<void> {
   process.on('SIGTERM', shutdown);
 }
 
+/**
+ * Invoke main to start the server and services.
+ */
 main()
   .then(() => {
     console.log(`[main] server started on port ${PORT}`);

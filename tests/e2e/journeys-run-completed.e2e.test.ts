@@ -1,11 +1,12 @@
 import dotenv from 'dotenv';
 import { FastifyInstance } from 'fastify';
 import { startServer } from '#src/server.js';
-import { connect, isConnected, disconnect } from '#src/db/mongodb-interface.js';
+import { connect, isConnected } from '#src/db/mongodb-interface.js';
 import { JourneyModel } from '#src/db/mongodb-schema.js';
 import type { ConnectOptions } from 'mongoose';
-import { startWorker, stopWorker } from '#src/executor/worker.js';
-import { createQueue, closeQueue, getQueue } from '#src/executor/queue.js';
+import { startWorker } from '#src/executor/worker.js';
+import { createQueue, getQueue } from '#src/executor/queue.js';
+import { teardownTestInfra } from '#test/utils/test-teardown.js';
 
 const e2e = (process.env.E2E_WORKER_TESTS === '1') ? describe : describe.skip;
 
@@ -31,14 +32,11 @@ e2e('E2E: GET run state after completion', () => {
 
   afterEach(async () => {
     await JourneyModel.deleteMany({});
-    try { await getQueue().obliterate({ force: true }); } catch {}
+    try { await getQueue().obliterate({ force: true }); } catch {} // eslint-disable-line no-empty
   });
 
   afterAll(async () => {
-    await stopWorker();
-    await closeQueue();
-    await fastifyInstance.close();
-    await disconnect();
+    await teardownTestInfra(fastifyInstance);
   });
 
   test('returns completed status and expected fields', async () => {
@@ -69,7 +67,7 @@ e2e('E2E: GET run state after completion', () => {
       const res = await fetch(`${BASE_URL}/journeys/runs/${runId}`);
       if (res.status === 200) {
         body = await res.json();
-        if (body.status === 'completed' || body.status === 'failed') break;
+        if (body.status === 'completed' || body.status === 'failed') {break;}
       }
       await new Promise(r => setTimeout(r, 200));
     }

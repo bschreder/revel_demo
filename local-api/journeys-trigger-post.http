@@ -1,6 +1,7 @@
 ### Sample: Trigger a journey run for a patient
+#  Step 2 in example-journey.http
 
-POST http://localhost:5000/journeys/5389f0f4-9627-427c-96a6-ab0408de127d/trigger
+POST http://localhost:5000/journeys/53360e05-bd25-455d-84d5-8ae409d8d14e/trigger
 Content-Type: application/json
 
 {

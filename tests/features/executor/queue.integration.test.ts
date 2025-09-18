@@ -33,15 +33,16 @@ describe('BullMQ Queue', () => {
     expect(() => getQueueName()).toThrow('Queue name is not defined');
   });
 
-  test.skip('should create queue with default name if none provided', () => {
+  test('should create queue with default name if none provided', async () => {
     const originalEnv = process.env.BULLMQ_QUEUE_NAME;
     delete process.env.BULLMQ_QUEUE_NAME;
-    jest.resetModules();
 
     const queue = createQueue();
     expect(queue).toBeInstanceOf(Queue);
     expect(queue.name).toBe('journey');
 
-    process.env.BULLMQ_QUEUE_NAME = originalEnv;
+    // Cleanup
+    await closeQueue();
+    if (originalEnv) {process.env.BULLMQ_QUEUE_NAME = originalEnv;}
   });
 });

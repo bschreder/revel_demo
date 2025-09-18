@@ -5,11 +5,14 @@ import { triggerJourneyRequestSchema } from '#src/models/journey-schema.js';
 import { randomUUID } from 'crypto';
 import { JobNodeResponseSchema } from '#src/models/journey-schema.js';
 import { getJourneyRunById } from '#src/services/journeys-service.js';
+import { getRunTrace } from '#src/db/mongodb-interface.js';
+import { RunTraceResponse } from '#src/models/trace-schema.js';
 
 /**
  * Handles POST /journeys to create a new journey definition.
- * @param request FastifyRequest containing the journey in the body
- * @param reply FastifyReply for sending the response
+ * @param {FastifyRequest} request FastifyRequest containing the journey in the body
+ * @param {FastifyReply} reply FastifyReply for sending the response
+ * @returns {Promise<void>} Promise that resolves when the response is sent
  */
 export async function postJourney(request: FastifyRequest, reply: FastifyReply): Promise<void> {
   try {
@@ -25,8 +28,9 @@ export async function postJourney(request: FastifyRequest, reply: FastifyReply):
 
 /**
  * Handles POST /journeys/:journeyId/trigger to start a new journey run for a patient.
- * @param request FastifyRequest containing patient context in the body
- * @param reply FastifyReply for sending the response
+ * @param {FastifyRequest} request FastifyRequest containing patient context in the body
+ * @param {FastifyReply} reply FastifyReply for sending the response
+ * @returns {Promise<void>} Promise that resolves when the response is sent
  */
 export async function triggerJourney(request: FastifyRequest, reply: FastifyReply): Promise<void> {
   const { journeyId } = request.params as { journeyId: string };
@@ -52,8 +56,9 @@ export async function triggerJourney(request: FastifyRequest, reply: FastifyRepl
 
 /**
  * Handles GET /journeys/runs/:runId to fetch the status of a journey run.
- * @param request FastifyRequest containing the runId param
- * @param reply FastifyReply for sending the response
+ * @param {FastifyRequest} request FastifyRequest containing the runId param
+ * @param {FastifyReply} reply FastifyReply for sending the response
+ * @returns {Promise<JobNodeResponseSchema | void>} The run status or void if an error occurs
  */
 export async function getJourneyRunStatus(request: FastifyRequest, reply: FastifyReply): Promise<JobNodeResponseSchema | void> {
   const { runId } = request.params as { runId: string };
@@ -67,5 +72,26 @@ export async function getJourneyRunStatus(request: FastifyRequest, reply: Fastif
   } catch (err) {
     request.log.error({ err }, 'Failed to fetch journey run status');
     reply.code(500).send({ error: 'Failed to fetch journey run status' });
+  }
+}
+
+/**
+ * Handles GET /journeys/runs/:runId/trace to fetch the execution trace of a journey run.
+ * @param {FastifyRequest} request FastifyRequest containing the runId param
+ * @param {FastifyReply} reply FastifyReply for sending the response
+ * @returns {Promise<RunTraceResponse | void>} The run trace or void if an error occurs
+ */
+export async function getJourneyRunTrace(request: FastifyRequest, reply: FastifyReply): Promise<RunTraceResponse | void> {
+  const { runId } = request.params as { runId: string };
+  try {
+    const trace = await getRunTrace(runId);
+    if (!trace) {
+      reply.code(404).send({ error: 'Trace not found' });
+      return;
+    }
+    reply.code(200).send(trace);
+  } catch (err) {
+    request.log.error({ err }, 'Failed to fetch journey run trace');
+    reply.code(500).send({ error: 'Failed to fetch journey run trace' });
   }
 }

@@ -38,7 +38,7 @@ export const journeySchema = z.object({
  * Zod schema for validating the response of creating a Journey.
  */
 export const journeyIdResponseSchema = z.object({
-  journeyId: z.string()
+  journeyId: z.uuid()
 });
 
 export type JourneyIdResponse = z.infer<typeof journeyIdResponseSchema>;
@@ -64,13 +64,28 @@ export const triggerJourneyRequestSchema = z.object({
  * Zod schema for validating the trigger journey response.
  */
 export const triggerJourneyResponseSchema = z.object({
-  runId: z.string()
+  runId: z.uuid()
+});
+
+/**
+ * Zod schema for validating route params containing a journeyId.
+ */
+export const journeyIdParamsSchema = z.object({
+  journeyId: z.uuid()
+});
+
+/**
+ * Zod schema for validating route params containing a runId.
+ */
+export const runIdParamsSchema = z.object({
+  runId: z.uuid()
 });
 
 /**
  * Zod schema for validating a job data object.
  */
 export const jobNode = z.object({
+  runId: z.string(),
   journeyId: z.string(),
   currentNodeId: z.string(),
   patientContext: patientContextSchema,

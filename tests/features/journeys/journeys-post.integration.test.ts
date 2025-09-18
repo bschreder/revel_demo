@@ -2,11 +2,11 @@ import dotenv from 'dotenv';
 import { FastifyInstance } from 'fastify';
 import { startServer } from '#src/server.js';
 import { Journey } from '#src/models/node-types.js';
-import { connect, isConnected, disconnect } from '#src/db/mongodb-interface.js';
+import { connect, isConnected } from '#src/db/mongodb-interface.js';
 import { ConnectOptions } from 'mongoose';
 import { JourneyIdResponse } from '#src/models/journey-schema.js';
 import { JourneyModel } from '#src/db/mongodb-schema.js';
-import { closeQueue } from '#src/executor/queue.js';
+import { teardownTestInfra } from '#test/utils/test-teardown.js';
 
 
 
@@ -33,9 +33,7 @@ describe('POST /journeys', () => {
   });
 
   afterAll(async () => {
-    await fastifyInstance.close();
-    await closeQueue();
-    await disconnect();
+    await teardownTestInfra(fastifyInstance);
   });
 
   afterEach(async () => {

@@ -12,6 +12,9 @@ The project is built by a staff engineer use best nodejs and npm practices.
 - **String Literals:** Use single quotes `' '`.
 - **Asynchronous Code:** Prefer `async/await` over callbacks or `.then()` chains.
 - **File Naming:** Use `kebab-case` for file and directory names (e.g., `user-service.ts`, `auth-middleware.ts`).
+- **Function Typing:** Prefer to define explicit parameter and return types for functions and methods.
+- **Defined Types:** Prefer to use defined types instead of `any`.
+- **Interfaces:** Use TypeScript interfaces to define the shape of objects and data structures.
 
 ## Preferred Technologies
 

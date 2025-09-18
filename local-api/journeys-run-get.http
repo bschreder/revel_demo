@@ -1,11 +1,12 @@
 ### GET /journeys/runs/:runId
+#  Step 3 in example-journey.http
 
-GET http://localhost:5000/journeys/runs/49
+GET http://localhost:5000/journeys/runs/9cedc9b8-af2e-45b5-ae19-ce50017c6129
 Accept: application/json
 
 ### Example response
 # {
-#   "runId": "19",
+#   "runId": "6526b6f9-de2e-4a3f-a504-b9afc425b3bc",
 #   "status": "completed",
 #   "journeyId": "38639a7f-14e3-4506-920f-f28f2d971ea2",
 #   "currentNodeId": "node1",

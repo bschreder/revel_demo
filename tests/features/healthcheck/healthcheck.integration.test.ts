@@ -1,5 +1,6 @@
 import { FastifyInstance } from 'fastify';
 import { startServer } from '#src/server.js';
+import { teardownTestInfra } from '#test/utils/test-teardown.js';
 
 describe('healthcheck integration', () => {
   let fastifyInstance: FastifyInstance;
@@ -12,7 +13,7 @@ describe('healthcheck integration', () => {
   });
 
   afterAll(async () => {
-    await fastifyInstance.close();
+    await teardownTestInfra(fastifyInstance);
   });
 
   test('should return 200 and status ok', async () => {

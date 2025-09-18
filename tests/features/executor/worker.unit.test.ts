@@ -34,7 +34,7 @@ jest.mock('bullmq', () => {
     }
     async close() { /* noop */ }
   }
-  class MockQueue { constructor(..._args: any[]) {} }
+  class MockQueue { constructor() {} }
   const WorkerOptions = {} as unknown as Record<string, unknown>;
   const Job = {} as unknown as Record<string, unknown>;
   return { Worker: MockWorker, QueueEvents: MockQueueEvents, Queue: MockQueue, WorkerOptions, Job };
@@ -47,6 +47,7 @@ describe('BullMQ Worker', () => {
 
   test('should process jobs and emit events', async () => {
     const testJob: JobNode = {
+      runId: 'r-1',
       journeyId: 'journey-1',
       currentNodeId: 'node-1',
       patientContext: { id: 'patient-1', age: 30, language: 'en', condition: 'hip_replacement' },
@@ -93,7 +94,7 @@ describe('BullMQ Worker', () => {
   });
 
   test('queue events waiting/active/stalled/drained/error are handled', async () => {
-    const worker: any = startWorker('action');
+    startWorker('action');
     // Access the mocked QueueEvents via the worker module's internal state is not possible directly,
     // but our MockQueueEvents stores listeners; rebuild a local one to simulate emission
     const qe: any = new (jest.requireMock('bullmq').QueueEvents)('journey');
@@ -127,7 +128,7 @@ describe('BullMQ Worker', () => {
   });
 
   test('stopWorker is idempotent and multiple cycles work', async () => {
-    const w1: any = startWorker('action');
+    startWorker('action');
     await stopWorker();
     await stopWorker(); // call again, should be safe
     const w2: any = startWorker('delay');

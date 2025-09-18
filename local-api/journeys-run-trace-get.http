@@ -1,0 +1,22 @@
+# Get a journey run trace
+#  Step 4 in example-journey.http
+
+###
+GET http://localhost:5000/journeys/runs/9cedc9b8-af2e-45b5-ae19-ce50017c6129/trace
+Accept: application/json
+
+### Example placeholder
+# @name triggerFirst
+POST http://localhost:5000/journeys/44b42a48-60e1-47d9-8ee2-7dcf70c1d4c1/trigger
+Content-Type: application/json
+
+{
+  "patient": {
+    "id": "p1",
+    "age": 70,
+    "language": "en",
+    "condition": "hip_replacement"
+  }
+}
+
+### Then paste the runId above into {{runId}} and re-run the GET

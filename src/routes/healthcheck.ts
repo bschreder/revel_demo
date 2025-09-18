@@ -2,7 +2,8 @@ import { FastifyInstance } from 'fastify';
 
 /**
  * Healthcheck route handler.
- * @param fastify Fastify instance
+ * @param {FastifyInstance} fastify Fastify instance
+ * @returns {Promise<void>}
  */
 export default async function healthcheckRoutes(fastify: FastifyInstance): Promise<void> {
   fastify.get('/healthcheck', async (request, reply) => {

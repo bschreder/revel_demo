@@ -43,7 +43,7 @@
             "name": "journeyId",
             "in": "path",
             "required": true,
-            "schema": { "type": "string" }
+            "schema": { "type": "string", "format": "uuid" }
           }
         ],
         "requestBody": {
@@ -68,6 +68,14 @@
                 "schema": { "$ref": "#/components/schemas/TriggerJourneyResponse" }
               }
             }
+          },
+          "400": {
+            "description": "Invalid request (e.g., non-UUID journeyId or invalid body)",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ValidationError" }
+              }
+            }
           }
         }
       }
@@ -80,7 +88,7 @@
             "name": "runId",
             "in": "path",
             "required": true,
-            "schema": { "type": "string" }
+            "schema": { "type": "string", "format": "uuid" }
           }
         ],
         "responses": {
@@ -92,8 +100,72 @@
               }
             }
           },
+          "400": {
+            "description": "Invalid request (e.g., non-UUID runId)",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ValidationError" }
+              }
+            }
+          },
           "404": {
             "description": "Run not found",
+            "content": {
+              "application/json": {
+                "schema": { "type": "object", "properties": { "error": { "type": "string" } } }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": { "type": "object", "properties": { "error": { "type": "string" } } }
+              }
+            }
+          }
+        }
+      }
+    }
+    ,
+    "/journeys/runs/{runId}/trace": {
+      "get": {
+        "summary": "Get the execution trace of a specific journey run",
+        "parameters": [
+          {
+            "name": "runId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Full execution trace of the run",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/RunTraceResponse" }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request (e.g., non-UUID runId)",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ValidationError" }
+              }
+            }
+          },
+          "404": {
+            "description": "Trace not found",
+            "content": {
+              "application/json": {
+                "schema": { "type": "object", "properties": { "error": { "type": "string" } } }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
             "content": {
               "application/json": {
                 "schema": { "type": "object", "properties": { "error": { "type": "string" } } }
@@ -106,6 +178,23 @@
   },
   "components": {
     "schemas": {
+      "ValidationError": {
+        "type": "object",
+        "properties": {
+          "error": { "type": "string" },
+          "details": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "message": { "type": "string" },
+                "path": { "type": "string" }
+              }
+            }
+          }
+        },
+        "required": ["error"]
+      },
       "Journey": {
         "type": "object",
         "properties": {
@@ -187,11 +276,61 @@
         "type": "object",
         "properties": {
           "runId": { "type": "string" },
-          "status": { "type": "string", "enum": ["in_progress", "completed"] },
+          "status": { "type": "string", "enum": ["in_progress", "completed", "failed"] },
+          "journeyId": { "type": "string" },
           "currentNodeId": { "type": "string" },
           "patientContext": { "type": "object", "additionalProperties": true }
         },
-        "required": ["runId", "status", "currentNodeId", "patientContext"]
+        "required": ["runId", "status", "journeyId", "currentNodeId", "patientContext"]
+      },
+      "ExecutionStep": {
+        "type": "object",
+        "properties": {
+          "nodeId": { "type": "string" },
+          "type": { "type": "string", "enum": ["MESSAGE", "DELAY", "CONDITIONAL"] },
+          "startedAt": { "type": "string" },
+          "finishedAt": { "type": ["string", "null"] },
+          "result": {
+            "oneOf": [
+              { "$ref": "#/components/schemas/StepResultMessage" },
+              { "$ref": "#/components/schemas/StepResultDelay" },
+              { "$ref": "#/components/schemas/StepResultConditional" }
+            ]
+          }
+        }
+      },
+      "StepResultMessage": {
+        "type": "object",
+        "properties": { "message": { "type": "string" } }
+      },
+      "StepResultDelay": {
+        "type": "object",
+        "properties": { "duration_seconds": { "type": "number" } }
+      },
+      "StepResultConditional": {
+        "type": "object",
+        "properties": {
+          "field": { "type": "string" },
+          "operator": { "type": "string" },
+          "value": {},
+          "evaluated": {},
+          "outcome": { "type": "boolean" },
+          "next_node_id": { "type": ["string", "null"] }
+        }
+      },
+      "RunTraceResponse": {
+        "type": "object",
+        "properties": {
+          "runId": { "type": "string" },
+          "journeyId": { "type": "string" },
+          "status": { "type": "string", "enum": ["in_progress", "completed", "failed"] },
+          "startedAt": { "type": "string" },
+          "finishedAt": { "type": ["string", "null"] },
+          "currentNodeId": { "type": ["string", "null"] },
+          "patientContext": { "$ref": "#/components/schemas/PatientContext" },
+          "steps": { "type": "array", "items": { "$ref": "#/components/schemas/ExecutionStep" } }
+        },
+        "required": ["runId", "journeyId", "status", "startedAt", "currentNodeId", "patientContext", "steps"]
       }
     }
   }

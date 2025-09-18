@@ -1,11 +1,12 @@
 import { addJob, getJobStatus } from '#src/executor/job.js';
-import { createQueue, getQueue } from '#src/executor/queue.js';
+import { createQueue } from '#src/executor/queue.js';
 import { JobNode } from '#src/models/journey-schema.js';
-import { getJourneyById } from '#src/db/mongodb-interface.js';
+import { getJourneyById, getRunTrace } from '#src/db/mongodb-interface.js';
 
 // Mock dependencies
 jest.mock('#src/db/mongodb-interface.js', () => ({
   getJourneyById: jest.fn(),
+  getRunTrace: jest.fn(),
 }));
 
 // Create a simple in-memory job store to simulate BullMQ without Redis
@@ -70,6 +71,7 @@ describe('addJob', () => {
     (getJourneyById as jest.Mock).mockResolvedValue(mockJourney);
     const queue = createQueue('action');
     const job: JobNode = {
+      runId: 'r-1',
       journeyId: 'journey-1',
       currentNodeId: 'node-1',
       patientContext: { id: 'patient-1', age: 30, language: 'en', condition: 'hip_replacement' },
@@ -86,18 +88,19 @@ describe('addJob', () => {
   });
 
   test('should throw error if currentNodeId is missing', async () => {
-    const job: any = { journeyId: 'journey-1', patientContext: {} };
+    const job: any = { runId: 'r-1', journeyId: 'journey-1', patientContext: {} };
     await expect(addJob(job)).rejects.toThrow('Invalid job data: missing currentNodeId or journeyId');
   });
 
   test('should throw error if journeyId is missing', async () => {
-    const job: any = { currentNodeId: 'node-1', patientContext: {} };
+    const job: any = { runId: 'r-1', currentNodeId: 'node-1', patientContext: {} };
     await expect(addJob(job)).rejects.toThrow('Invalid job data: missing currentNodeId or journeyId');
   });
 
   test('should throw error if journey not found', async () => {
     (getJourneyById as jest.Mock).mockResolvedValue(null);
     const job: JobNode = {
+      runId: 'r-1',
       journeyId: 'not-found',
       currentNodeId: 'node-1',
       patientContext: { id: 'patient-1', age: 30, language: 'en', condition: 'hip_replacement' },
@@ -108,6 +111,7 @@ describe('addJob', () => {
   test('should throw error if node not found in journey', async () => {
     (getJourneyById as jest.Mock).mockResolvedValue(mockJourney);
     const job: JobNode = {
+      runId: 'r-1',
       journeyId: 'journey-1',
       currentNodeId: 'missing-node',
       patientContext: { id: 'patient-1', age: 30, language: 'en', condition: 'hip_replacement' },
@@ -119,6 +123,7 @@ describe('addJob', () => {
     (getJourneyById as jest.Mock).mockResolvedValue(mockJourney);
     const queue = createQueue('journey');
     const job: JobNode = {
+      runId: 'r-1',
       journeyId: 'journey-1',
       currentNodeId: 'node-2',
       patientContext: { id: 'patient-2', age: 40, language: 'es', condition: 'knee_replacement' },
@@ -137,6 +142,7 @@ describe('addJob', () => {
     (getJourneyById as jest.Mock).mockResolvedValue(mockJourney);
     const queue = createQueue('journey');
     const job: JobNode = {
+      runId: 'r-1',
       journeyId: 'journey-1',
       currentNodeId: 'node-3',
       patientContext: { id: 'patient-3', age: 50, language: 'en', condition: 'knee_replacement' },
@@ -157,6 +163,7 @@ describe('addJob', () => {
     };
     (getJourneyById as jest.Mock).mockResolvedValue(journeyWithUnknownNode);
     const job: JobNode = {
+      runId: 'r-1',
       journeyId: 'journey-1',
       currentNodeId: 'node-4',
       patientContext: { id: 'patient-4', age: 60, language: 'es', condition: 'hip_replacement' },
@@ -168,28 +175,29 @@ describe('addJob', () => {
 describe('getJobStatus', () => {
   test('should return null if job does not exist', async () => {
     createQueue('journey');
+    (getRunTrace as jest.Mock).mockResolvedValue(null);
     const status = await getJobStatus('non-existent-job-id');
     expect(status).toBeNull();
   });
 
-  test('should return job status if job exists', async () => {
-    (getJourneyById as jest.Mock).mockResolvedValue(mockJourney);
-    const job: JobNode = {
+  test('should return job status if trace exists', async () => {
+    (getRunTrace as jest.Mock).mockResolvedValue({
+      runId: 'r-123',
+      journeyId: 'journey-1',
+      status: 'in_progress',
+      startedAt: new Date().toISOString(),
+      finishedAt: null,
+      currentNodeId: 'node-1',
+      patientContext: { id: 'p1', age: 30, language: 'en', condition: 'hip_replacement' },
+      steps: []
+    });
+    const status = await getJobStatus('r-123');
+    expect(status).toEqual({
+      runId: 'r-123',
+      status: 'in_progress',
       journeyId: 'journey-1',
       currentNodeId: 'node-1',
-      patientContext: { id: 'patient-5', age: 70, language: 'en', condition: 'hip_replacement' },
-    };
-    const jobId = await addJob(job);
-    const status = await getJobStatus(jobId);
-    expect(status).not.toBeNull();
-    expect(status?.runId).toBe(jobId);
-    expect(status?.status).toBe('in_progress');
-    expect(status?.journeyId).toBe(job.journeyId);
-    expect(status?.currentNodeId).toBe(job.currentNodeId);
-    const queue = getQueue();
-    const addedJob = await queue.getJob(jobId);
-    if (addedJob) {
-      await addedJob.remove();
-    }
+      patientContext: { id: 'p1', age: 30, language: 'en', condition: 'hip_replacement' }
+    });
   });
 });

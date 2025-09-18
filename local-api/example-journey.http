@@ -1,0 +1,119 @@
+# Example Journey Walkthrough
+#
+# How to use:
+# - Run each request in order (click "Send Request" above each block).
+# - Variables in later requests are populated from earlier responses automatically.
+# - The run processing is asynchronous; you may need to call the GET requests a couple times until status is "completed".
+
+##  Node progression
+# node1: MESSAGE → next delay1
+# delay1: DELAY (25 seconds) → next cond1
+# cond1: CONDITIONAL on patient.age > 18
+#           true → trueMsg
+#           false → falseMsg
+# trueMsg: MESSAGE → finalMsg
+# falseMsg: MESSAGE → finalMsg
+# finalMsg: MESSAGE → end
+
+@baseUrl = http://localhost:5000
+@contentType = application/json
+@accept = application/json
+
+# Condition to test vs 18
+@age = 67
+# Delay duration in seconds
+@delaySeconds = 25
+
+### 1) Create a Journey
+# @name createJourney
+POST {{baseUrl}}/journeys
+Content-Type: {{contentType}}
+Accept: {{accept}}
+
+{
+  "id": "j-{{$guid}}",
+  "name": "Example Journey {{$timestamp}}",
+  "start_node_id": "node1",
+  "nodes": [
+    {
+      "id": "node1",
+      "type": "MESSAGE",
+      "message": "Hello from Example Journey!",
+      "next_node_id": "delay1"
+    },
+    {
+      "id": "delay1",
+      "type": "DELAY",
+      "duration_seconds": {{delaySeconds}},
+      "next_node_id": "cond1"
+    },
+    {
+      "id": "cond1",
+      "type": "CONDITIONAL",
+      "condition": {
+        "field": "patient.age",
+        "operator": ">",
+        "value": 18
+      },
+      "on_true_next_node_id": "trueMsg",
+      "on_false_next_node_id": "falseMsg"
+    },
+    {
+      "id": "trueMsg",
+      "type": "MESSAGE",
+      "message": "Condition was true",
+      "next_node_id": "finalMsg"
+    },
+    {
+      "id": "falseMsg",
+      "type": "MESSAGE",
+      "message": "Condition was false",
+      "next_node_id": "finalMsg"
+    },
+    {
+      "id": "finalMsg",
+      "type": "MESSAGE",
+      "message": "All paths end here",
+      "next_node_id": null
+    }
+  ]
+}
+###
+# Optional: Inspect created JourneyId
+# The following expression will resolve after you run the request above:
+# {{createJourney.response.body.$.journeyId}}
+
+
+### 2) Trigger a Run for the Journey created above
+# Uses the journeyId returned by the createJourney response
+# @name triggerJourney
+POST {{baseUrl}}/journeys/{{createJourney.response.body.$.journeyId}}/trigger
+Content-Type: {{contentType}}
+Accept: {{accept}}
+
+{
+  "patient": {
+    "id": "patient-{{$guid}}",
+    "age": {{age}},
+    "language": "en",
+    "condition": "hip_replacement"
+  }
+}
+
+### Optional: Inspect returned runId and Location header
+# Body runId: {{triggerJourney.response.body.$.runId}}
+# Location:   {{triggerJourney.response.headers.Location}}
+
+
+### 3) Get the Run status
+# Uses the runId returned by the triggerJourney response
+# @name getRun
+GET {{baseUrl}}/journeys/runs/{{triggerJourney.response.body.$.runId}}
+Accept: {{accept}}
+
+
+### 4) Get the Run trace
+# Uses the same runId
+# @name getRunTrace
+GET {{baseUrl}}/journeys/runs/{{triggerJourney.response.body.$.runId}}/trace
+Accept: {{accept}}
