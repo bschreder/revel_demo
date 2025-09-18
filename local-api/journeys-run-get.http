@@ -1,0 +1,18 @@
+### GET /journeys/runs/:runId
+
+GET http://localhost:5000/journeys/runs/21
+Accept: application/json
+
+### Example response
+# {
+#   "runId": "19",
+#   "status": "completed",
+#   "journeyId": "38639a7f-14e3-4506-920f-f28f2d971ea2",
+#   "currentNodeId": "node1",
+#   "patientContext": {
+#     "id": "patient-001",
+#     "age": 67,
+#     "language": "en",
+#     "condition": "hip_replacement"
+#   }
+# }

@@ -34,6 +34,74 @@
           }
         }
       }
+    },
+    "/journeys/{journeyId}/trigger": {
+      "post": {
+        "summary": "Start a new execution run of a specific journey for a patient",
+        "parameters": [
+          {
+            "name": "journeyId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/TriggerJourneyRequest" }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Journey run triggered",
+            "headers": {
+              "Location": {
+                "description": "URL to monitor the run",
+                "schema": { "type": "string" }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/TriggerJourneyResponse" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/journeys/runs/{runId}": {
+      "get": {
+        "summary": "Get the status of a specific journey run",
+        "parameters": [
+          {
+            "name": "runId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Current state of the run",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/JourneyRunStatusResponse" }
+              }
+            }
+          },
+          "404": {
+            "description": "Run not found",
+            "content": {
+              "application/json": {
+                "schema": { "type": "object", "properties": { "error": { "type": "string" } } }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -90,6 +158,40 @@
           "on_true_next_node_id": { "type": ["string", "null"] },
           "on_false_next_node_id": { "type": ["string", "null"] }
         }
+      },
+      "TriggerJourneyRequest": {
+        "type": "object",
+        "properties": {
+          "patient": { "$ref": "#/components/schemas/PatientContext" }
+        },
+        "required": ["patient"]
+      },
+      "TriggerJourneyResponse": {
+        "type": "object",
+        "properties": {
+          "runId": { "type": "string" }
+        },
+        "required": ["runId"]
+      },
+      "PatientContext": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "age": { "type": "number" },
+          "language": { "type": "string", "enum": ["en", "es"] },
+          "condition": { "type": "string", "enum": ["hip_replacement", "knee_replacement"] }
+        },
+        "required": ["id", "age", "language", "condition"]
+      },
+      "JourneyRunStatusResponse": {
+        "type": "object",
+        "properties": {
+          "runId": { "type": "string" },
+          "status": { "type": "string", "enum": ["in_progress", "completed"] },
+          "currentNodeId": { "type": "string" },
+          "patientContext": { "type": "object", "additionalProperties": true }
+        },
+        "required": ["runId", "status", "currentNodeId", "patientContext"]
       }
     }
   }

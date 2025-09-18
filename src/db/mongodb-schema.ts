@@ -28,4 +28,5 @@ export const journeySchema = new mongoose.Schema({
   nodes: { type: [journeyNodeSchema], required: true }
 });
 
-export const JourneyModel = mongoose.model('Journey', journeySchema);
+export const JourneyModel = 
+      mongoose.models.Journey || mongoose.model('Journey', journeySchema);

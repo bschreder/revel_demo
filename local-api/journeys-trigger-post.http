@@ -1,0 +1,22 @@
+### Sample: Trigger a journey run for a patient
+
+POST http://localhost:5000/journeys/17acef88-2f97-4823-bcc8-660e099fbe38/trigger
+Content-Type: application/json
+
+{
+  "patient": {
+    "id": "patient-001",
+    "age": 67,
+    "language": "en",
+    "condition": "hip_replacement"
+  }
+}
+
+### Expected Response
+HTTP/1.1 202 Accepted
+Location: /journeys/runs/abcd-uuid-1234
+Content-Type: application/json
+
+{
+  "runId": "abcd-uuid-1234"
+}

@@ -40,3 +40,53 @@ export const journeySchema = z.object({
 export const journeyIdResponseSchema = z.object({
   journeyId: z.string()
 });
+
+export type JourneyIdResponse = z.infer<typeof journeyIdResponseSchema>;
+
+/**
+ * Zod schema for validating PatientContext objects.
+ */
+export const patientContextSchema = z.object({
+  id: z.string(),
+  age: z.number(),
+  language: z.enum(['en', 'es']),
+  condition: z.enum(['hip_replacement', 'knee_replacement'])
+});
+
+/**
+ * Zod schema for validating the trigger journey request body.
+ */
+export const triggerJourneyRequestSchema = z.object({
+  patient: patientContextSchema
+});
+
+/**
+ * Zod schema for validating the trigger journey response.
+ */
+export const triggerJourneyResponseSchema = z.object({
+  runId: z.string()
+});
+
+/**
+ * Zod schema for validating a job data object.
+ */
+export const jobNode = z.object({
+  journeyId: z.string(),
+  currentNodeId: z.string(),
+  patientContext: patientContextSchema,
+});
+
+export type JobNode = z.infer<typeof jobNode>;
+
+/**
+ * Zod schema for validating a run object.
+ */
+export const jobNodeResponseSchema = z.object({
+  runId: z.string(),
+  status: z.enum(['in_progress', 'completed', 'failed']),
+  journeyId: z.string(),
+  currentNodeId: z.string(),
+  patientContext: patientContextSchema,
+});
+
+export type JobNodeResponseSchema = z.infer<typeof jobNodeResponseSchema>;

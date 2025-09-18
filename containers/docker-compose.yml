@@ -34,6 +34,18 @@ services:
     depends_on:
       - mongodb
 
+  # note:  redis connection string is redis://default@redis:6379
+  redisinsight:
+    image: 'redis/redisinsight:latest'
+    restart: always
+    ports:
+      - '5540:5540'
+    volumes:
+      - redisinsight_data:/data
+    depends_on:
+      - redis
+
 volumes:
   mongodata:
   redisdata:
+  redisinsight_data:

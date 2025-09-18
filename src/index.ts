@@ -1,6 +1,8 @@
 import dotenv from 'dotenv';
 import { startServer } from './server.js';
 import { connect, isConnected, disconnect } from './db/mongodb-interface.js';
+import { startWorker, stopWorker } from './executor/worker.js';
+import { closeQueue, createQueue } from './executor/queue.js';
 
 
 dotenv.config();
@@ -8,24 +10,24 @@ dotenv.config();
 const PORT = process.env.FASTIFY_PORT ? parseInt(process.env.FASTIFY_PORT, 10) : 5000;
 
 async function main(): Promise<void> {
-  console.log('[main] Starting application...');
+  // Connect to MongoDB
   if (!isConnected()) {
-    console.log('[main] Not connected to MongoDB, connecting...');
     await connect();
-    console.log('[main] Connected to MongoDB');
-  } else {
-    console.log('[main] Already connected to MongoDB');
-  }
-  console.log(`[main] Starting Fastify server on port ${PORT}...`);
+  } 
+  
+  // Start the Fastify server
   const fastify = await startServer(PORT);
-  console.log('[main] Fastify server started');
+
+  // Start BullMQ worker
+  createQueue();
+  startWorker();
 
   // Graceful shutdown
   const shutdown = async (): Promise<void> => {
-    console.log('[main] Shutdown signal received, closing server and disconnecting from MongoDB...');
     await fastify.close();
     await disconnect();
-    console.log('[main] Shutdown complete. Exiting process.');
+    await closeQueue();
+    await stopWorker();
     process.exit(0);
   };
 

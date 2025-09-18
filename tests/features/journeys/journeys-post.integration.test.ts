@@ -4,13 +4,14 @@ import { startServer } from '#src/server.js';
 import { Journey } from '#src/models/node-types.js';
 import { connect, isConnected, disconnect } from '#src/db/mongodb-interface.js';
 import { ConnectOptions } from 'mongoose';
+import { JourneyIdResponse } from '#src/models/journey-schema.js';
 
-const dbName = 'revelai-test';
-const connectOptions: ConnectOptions = { dbName: dbName, autoIndex: false };
-type JourneyIdResponse = { journeyId: string };
+
 
 describe('POST /journeys', () => {
   let fastifyInstance: FastifyInstance;
+  const dbName = 'revelai-test';
+  const connectOptions: ConnectOptions = { dbName: dbName, autoIndex: false };
 
   beforeAll(async () => {
     // Ensure database connection

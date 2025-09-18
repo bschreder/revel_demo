@@ -4,16 +4,16 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "Launch Node.js (index.ts)",
+      "name": "Launch Node.js (index.ts) [ts-node ESM]",
       "program": "${workspaceFolder}/src/index.ts",
       "runtimeArgs": [
-        "--inspect-brk", "-r", "ts-node/register"
+        "--loader", "ts-node/esm", "--inspect-brk"
       ],
       "cwd": "${workspaceFolder}",
       "envFile": "${workspaceFolder}/.env",
-      "outFiles": [
-        "${workspaceFolder}/dist/**/*.js"
-      ],
+      // "outFiles": [
+      //   "${workspaceFolder}/src/**/*.ts"
+      // ],
       "skipFiles": ["<node_internals>/**"]
     }
   ]

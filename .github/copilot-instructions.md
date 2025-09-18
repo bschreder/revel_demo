@@ -48,7 +48,7 @@ The project is built by a staff engineer use best nodejs and npm practices.
 
 - **Coverage:** All new code must be accompanied by unit tests. Aim for at least 90% code coverage for critical components.
 - **Structure:** Follow the "Arrange-Act-Assert" (AAA) pattern for all tests, but do not place Arrange-Act-Assert comments in test files
-- **Framework:** Use Jest testing framework for all tests. For unit tests, mock external dependencies (e.g., API calls) using `jest.mock(<dependency>)`. For integration tests, use `fetch` to make real HTTP requests to the Fastify server.
+- **Framework:** Use Jest testing framework for all tests. For unit tests, mock external dependencies (e.g., API calls) using `jest.mock(<dependency>)`. For integration tests, use `fetch` to make real HTTP requests to the Fastify server. Use `test` instead of `it` for test cases.
 - **Folder:** Store tests in a parallel structure under `/tests` (e.g., `/tests/features/users`).
 - **Naming:** Use `.test.ts` suffix for unit test files (e.g., `user-service.test.ts`) and `.integration.test.ts` for integration test files (e.g., `user-service.integration.test.ts`).
 - **Types:** Use TypeScript for all test files.

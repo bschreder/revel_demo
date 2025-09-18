@@ -1,4 +1,7 @@
-// An action to be performed, like sending an SMS or making a call
+
+/**
+ * An action to be performed, like sending an SMS or making a call
+ */
 export interface ActionNode {
   id: string;
   type: 'MESSAGE';
@@ -6,7 +9,9 @@ export interface ActionNode {
   next_node_id: string | null;
 }
 
-// A simple time delay in the journey
+/**
+ * A simple time delay in the journey
+ */
 export interface DelayNode {
   id: string;
   type: 'DELAY';
@@ -14,7 +19,9 @@ export interface DelayNode {
   next_node_id: string | null;
 }
 
-// A conditional branch based on patient data
+/**
+ * A conditional branch based on patient data
+ */
 export interface ConditionalNode {
   id: string;
   type: 'CONDITIONAL';
@@ -32,8 +39,14 @@ export interface ConditionalNode {
   on_false_next_node_id: string | null;
 }
 
+/**
+ * Journey stages can be either actions, delays, or conditionals
+ */
 export type JourneyNode = ActionNode | DelayNode | ConditionalNode;
 
+/**
+ * A complete journey definition
+ */
 export interface Journey {
   id: string;
   name: string;
@@ -41,10 +54,24 @@ export interface Journey {
   nodes: JourneyNode[];
 }
 
-// Patient data to evaluate conditionals against
+/**
+ * Patient data to evaluate conditionals against
+ */ 
 export interface PatientContext {
   id: string;
   age: number;
   language: 'en' | 'es';
   condition: 'hip_replacement' | 'knee_replacement';
 }
+
+/**
+ * Interface representing a run node.
+ */
+export interface RunsNode {
+  runId: string;
+  status: 'in_progress' | 'completed' | 'failed';
+  journeyId: string;
+  currentNodeId: string;
+  patientContext: PatientContext;
+}
+

@@ -10,7 +10,14 @@ import { authMiddleware } from './middleware/auth-middleware.js';
  * @returns {Fastify.FastifyInstance} Configured Fastify server
  */
 export function buildServer(): FastifyInstance {
-  const fastify = Fastify({ logger: true });
+  // const fastify = Fastify({ logger: true });
+  const fastify = Fastify({logger: { 
+    transport:{target: 'pino-pretty',
+      options: {
+        translateTime: 'HH:MM:ss Z',
+        ignore: 'pid,hostname',
+      },}
+    }})
   fastify.addHook('preHandler', authMiddleware);
   fastify.register(journeysRoutes);
   fastify.register(healthcheckRoutes);

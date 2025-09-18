@@ -1,11 +1,12 @@
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import mongoose from 'mongoose';
-import { postJourneyController } from '#src/controllers/journeys-controller.js';
+import { postJourney } from '#src/controllers/journeys-controller.js';
 import { Journey } from '#src/models/node-types.js';
 import { FastifyRequest, FastifyReply } from 'fastify';
 
-describe('postJourneyController', () => {
+describe('postJourney', () => {
   let mongoServer: MongoMemoryServer;
+    type JourneyIdResponse = { journeyId: string };  
 
   beforeAll(async () => {
     mongoServer = await MongoMemoryServer.create();
@@ -26,7 +27,7 @@ describe('postJourneyController', () => {
     }
   });
 
-  it('should create a journey and return journeyId', async () => {
+  test('should create a journey and return journeyId', async () => {
     const journey: Journey = {
       id: '', // will be replaced in controller
       name: 'Test Journey',
@@ -56,7 +57,7 @@ describe('postJourneyController', () => {
       }
     } as unknown as FastifyReply;
 
-    await postJourneyController(request, reply);
+    await postJourney(request, reply);
     expect(statusCode).toBe(201);
     expect(responseBody).toHaveProperty('journeyId');
     expect(typeof responseBody.journeyId).toBe('string');

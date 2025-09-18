@@ -1,6 +1,6 @@
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import mongoose from 'mongoose';
-import { connect, isConnected,  disconnect, createJourney,
+import { isConnected,  disconnect, createJourney,
   getJourneyById, updateJourney, deleteJourney, listJourneys } from '#src/db/mongodb-interface.js';
 import type { Journey } from '#src/models/node-types.js';
 

@@ -15,6 +15,10 @@
 
 - OpenAPI: Implement fastify-swagger and register api endpoints. This could replace or be used in conjunction with `docs/openapi.json`
 
+- Pass logger into controller
+
+- Fix lint errors
+
 ## Security Enhancements
 
 - Add sensitive files to .gitignore. I didn't do this since it's just a demo environment
