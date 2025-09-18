@@ -1,15 +1,20 @@
-import { createQueue, getQueue, getQueueName } from '#src/executor/queue.js';
+import { createQueue, getQueue, getQueueName, closeQueue } from '#src/executor/queue.js';
 
 jest.mock('bullmq', () => {
   const mQueue = jest.fn().mockImplementation((name, options) => {
-    return { name, options };
+    return { name, options, close: jest.fn() };
   });
   return { Queue: mQueue };
 });
 
 describe('queue.ts', () => {
-  beforeEach(() => {
-    jest.resetModules();
+  beforeEach(async () => {
+    jest.clearAllMocks();
+    await closeQueue();
+  });
+
+  afterEach(async () => {
+    await closeQueue();
   });
 
   test('createQueue sets and returns a Queue instance with provided name', () => {
@@ -19,13 +24,16 @@ describe('queue.ts', () => {
     expect(queue.name).toBe(queueName);
   });
 
-  test.skip('createQueue uses default name if none provided', () => {
+  test('createQueue uses default name if none provided', () => {
+    const prev = process.env.BULLMQ_QUEUE_NAME;
+    delete process.env.BULLMQ_QUEUE_NAME;
     const queue = createQueue();
     expect(queue).toBeDefined();
     expect(queue.name).toBe('journey');
+    if (prev !== undefined) process.env.BULLMQ_QUEUE_NAME = prev; else delete process.env.BULLMQ_QUEUE_NAME;
   });
 
-  test.skip('getQueue returns the same Queue instance', () => {
+  test('getQueue returns the same Queue instance', () => {
     const queueName = 'another-queue';
     const created = createQueue(queueName);
     const retrieved = getQueue();
@@ -40,7 +48,7 @@ describe('queue.ts', () => {
   });
 
   test('getQueueName throws if queue not created', () => {
-    jest.resetModules();
+    // Ensure state is reset
     expect(() => getQueueName()).toThrow('Queue name is not defined');
   });
 });

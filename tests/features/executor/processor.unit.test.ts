@@ -82,3 +82,62 @@ describe('processor.ts', () => {
     await expect(conditionalProcessor(job)).rejects.toThrow('Unsupported operator: ??');
   });
 });
+
+// Additional branch coverage merged from processor-more.test.ts
+const baseJourney = {
+  id: 'journey-1',
+  nodes: [
+    { id: 'a1', type: 'MESSAGE', message: 'Hello', next_node_id: null },
+    { id: 'd1', type: 'DELAY', duration_seconds: 1, next_node_id: null },
+    { id: 'c1', type: 'CONDITIONAL', condition: { field: 'patient.age', operator: '=', value: 30 }, on_true_next_node_id: null, on_false_next_node_id: null },
+    { id: 'c2', type: 'CONDITIONAL', condition: { field: 'patient.age', operator: '!=', value: 30 }, on_true_next_node_id: 'a1', on_false_next_node_id: 'd1' },
+    { id: 'c3', type: 'CONDITIONAL', condition: { field: 'patient.age', operator: '<', value: 40 }, on_true_next_node_id: 'a1', on_false_next_node_id: 'd1' },
+  ],
+};
+
+describe('processor more branches (merged)', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    (getJourneyById as jest.Mock).mockResolvedValue(baseJourney);
+    (addJob as jest.Mock).mockResolvedValue('job-x');
+  });
+
+  test('actionProcessor completes when no next_node_id', async () => {
+    const job = { data: { journeyId: 'journey-1', currentNodeId: 'a1', patientContext: { id: 'p1', age: 30, language: 'en', condition: 'hip' } } } as unknown as Job;
+    const res = await actionProcessor(job);
+    expect(res).toMatch(/completed for patient/);
+    expect(addJob).not.toHaveBeenCalled();
+  });
+
+  test('delayProcessor completes when no next_node_id', async () => {
+    const job = { data: { journeyId: 'journey-1', currentNodeId: 'd1', patientContext: { id: 'p1', age: 30, language: 'en', condition: 'hip' } } } as unknown as Job;
+    const res = await delayProcessor(job);
+    expect(res).toMatch(/completed for patient/);
+    expect(addJob).not.toHaveBeenCalled();
+  });
+
+  test('conditionalProcessor operator = true path completes when no next', async () => {
+    const job = { data: { journeyId: 'journey-1', currentNodeId: 'c1', patientContext: { id: 'p1', age: 30, language: 'en', condition: 'hip' } } } as unknown as Job;
+    const res = await conditionalProcessor(job);
+    expect(res).toMatch(/completed for patient/);
+    expect(addJob).not.toHaveBeenCalled();
+  });
+
+  test('conditionalProcessor operator != uses true/false next ids', async () => {
+    const jobTrue = { data: { journeyId: 'journey-1', currentNodeId: 'c2', patientContext: { id: 'p1', age: 31, language: 'en', condition: 'hip' } } } as unknown as Job;
+    await conditionalProcessor(jobTrue);
+    expect(addJob).toHaveBeenCalledWith(expect.objectContaining({ currentNodeId: 'a1' }));
+
+    jest.clearAllMocks();
+    (addJob as jest.Mock).mockResolvedValue('job-y');
+    const jobFalse = { data: { journeyId: 'journey-1', currentNodeId: 'c2', patientContext: { id: 'p1', age: 30, language: 'en', condition: 'hip' } } } as unknown as Job;
+    await conditionalProcessor(jobFalse);
+    expect(addJob).toHaveBeenCalledWith(expect.objectContaining({ currentNodeId: 'd1' }));
+  });
+
+  test('conditionalProcessor operator < true path', async () => {
+    const job = { data: { journeyId: 'journey-1', currentNodeId: 'c3', patientContext: { id: 'p1', age: 20, language: 'en', condition: 'hip' } } } as unknown as Job;
+    await conditionalProcessor(job);
+    expect(addJob).toHaveBeenCalledWith(expect.objectContaining({ currentNodeId: 'a1' }));
+  });
+});

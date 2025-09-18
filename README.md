@@ -3,15 +3,17 @@
 ## Assumptions:
 
 - All journeys are self contained => one journey will not call the node in another journey
-- A journey starts, first node processed, when inserted into the mongodb
+- A journey starts when trigger endpoint is called
 
-## BullMQ Queue & Worker (src/executor)
+## Architecture and Structure
 
-This project includes a production-ready BullMQ queue and worker for background job processing using Redis.
+### Key Technologies
 
-### Setup
+### Folder Structure
 
-1. Ensure Redis is running (see `containers/docker-compose.yml` for local setup).
+## Usage
+
+1. Ensure MongoDb and Redis is running (see `containers/docker-compose.yml` for local setup).
 2. Set the following environment variables (or add to your `.env` file):
    - `REDIS_HOST` (default: `localhost`)
    - `REDIS_PORT` (default: `6379`)
@@ -20,39 +22,52 @@ This project includes a production-ready BullMQ queue and worker for background 
    - `REDIS_DB` (default: `0`)
    - `BULLMQ_QUEUE_NAME` (default: `default`)
 
-### Usage Example
+## Testing
 
-To add and process jobs:
-
-```
-pnpm install # or npm install
-pnpm tsx src/executor/run-example.ts # or npx tsx src/executor/run-example.ts
-```
-
-This will:
-
-- Start a BullMQ worker
-- Add an example job to the queue
-- Log job lifecycle events (completed, failed, progress, etc.)
-
-### Source Files
-
-- `src/executor/queue.ts`: Queue creation
-- `src/executor/worker.ts`: Worker and event listeners
-- `src/executor/redis-config.ts`: Redis config from env
-- `src/executor/example-job.ts`: Example job adder
-- `src/executor/example-processor.ts`: Example processor
-- `src/executor/run-example.ts`: Minimal usage example
-
-### Testing
-
-Unit tests are in `tests/features/executor/`. Run:
+Run all tests (unit + integration) in CI mode:
 
 ```
-npx jest tests/features/executor/ --detectOpenHandles --forceExit
+npm run test:ci
 ```
 
-### Notes
+Run unit tests:
+
+```
+npm run test:unit
+```
+
+Run integration tests:
+
+```
+npm run test:integration
+```
+
+Run end-to-end journey tests:
+
+```
+npm run test:e2e
+```
+
+### Running Integration Tests
+
+Integration tests use real MongoDB and Redis instances. Make sure local services are up and reachable.
+
+1. Start dependencies (MongoDB and Redis). For local development, you can use the compose file in `containers/docker-compose.yml`.
+   1. to start: `docker compose up -d`
+   2. to shutdown: `docker compose down --remove-orphans -v`
+2. Optionally set environment variables (defaults are used if not set):
+   - `MONGODB_HOST` (default: `localhost`)
+   - `MONGODB_PORT` (default: `27017`)
+   - `MONGODB_DATABASE` (default: `revelai-test`)
+   - `REDIS_HOST` (default: `localhost`)
+   - `REDIS_PORT` (default: `6379`)
+
+Notes:
+
+- Integration tests automatically use per-worker HTTP ports and test-specific BullMQ queue names to avoid conflicts.
+- By default, the test MongoDB database name is `revelai-test`.
+
+## Notes
 
 - All code is TypeScript and ESM.
 - Logging uses `pino`.

@@ -39,6 +39,11 @@ export async function triggerJourney(request: FastifyRequest, reply: FastifyRepl
       .send({ runId });
   } catch (err) {
     request.log.error({ err }, 'Failed to trigger journey run');
+    const message = (err as Error)?.message || '';
+    if (message.includes('not found')) {
+      reply.code(404).send({ error: 'Journey not found' });
+      return;
+    }
     reply.code(500).send({ error: 'Failed to trigger journey run' });
   }
 }

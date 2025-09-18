@@ -34,7 +34,8 @@ describe('triggerJourney', () => {
     (triggerJourneyService as jest.Mock).mockRejectedValue(new Error('fail'));
     const request = {
       params: { journeyId: 'jid' },
-      body: { patient: { id: 'p1', age: 60, language: 'en', condition: 'hip_replacement' } }
+      body: { patient: { id: 'p1', age: 60, language: 'en', condition: 'hip_replacement' } },
+      log: { error: jest.fn(), info: jest.fn(), warn: jest.fn() }
     } as unknown as FastifyRequest;
     const reply = {
       code: jest.fn().mockReturnThis(),
@@ -44,5 +45,22 @@ describe('triggerJourney', () => {
     await triggerJourney(request, reply);
     expect(reply.code).toHaveBeenCalledWith(500);
     expect(reply.send).toHaveBeenCalledWith({ error: 'Failed to trigger journey run' });
+  });
+
+  test('should return 404 when journey not found', async () => {
+    (triggerJourneyService as jest.Mock).mockRejectedValue(new Error('Journey not found'));
+    const request = {
+      params: { journeyId: 'missing' },
+      body: { patient: { id: 'p1', age: 60, language: 'en', condition: 'hip_replacement' } },
+      log: { error: jest.fn(), info: jest.fn(), warn: jest.fn() }
+    } as unknown as FastifyRequest;
+    const reply = {
+      code: jest.fn().mockReturnThis(),
+      header: jest.fn().mockReturnThis(),
+      send: jest.fn()
+    } as unknown as FastifyReply;
+    await triggerJourney(request, reply);
+    expect(reply.code).toHaveBeenCalledWith(404);
+    expect(reply.send).toHaveBeenCalledWith({ error: 'Journey not found' });
   });
 });

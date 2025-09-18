@@ -7,14 +7,13 @@ import { ActionNode, ConditionalNode, DelayNode } from '#src/models/node-types.j
 
 export type JobName = 'action' | 'delay' | 'conditional';
 
-const queue = getQueue();
-
 /**
  * Adds a job to the BullMQ queue with a specific job name.
  * @param {JobNode} data The job data
  * @returns {Promise<string>} The job ID
  */
 export async function addJob(data: JobNode): Promise<string> {
+  const queue = getQueue();
   const { currentNodeId, journeyId } = data;
   if (!currentNodeId || !journeyId) {
     throw new Error('Invalid job data: missing currentNodeId or journeyId');
@@ -31,18 +30,18 @@ export async function addJob(data: JobNode): Promise<string> {
   let jobName: JobName;
   let jobOptions = undefined;
   switch (node.type) {
-    case 'MESSAGE':
-      jobName = 'action';
-      break;
-    case 'DELAY':
-      jobName = 'delay';
-      jobOptions = { delay: (node as DelayNode).duration_seconds * 1000 };
-      break;
-    case 'CONDITIONAL':
-      jobName = 'conditional';
-      break;
-    default:
-      throw new Error(`Unsupported node type '${(node as any).type}' for node ID ${currentNodeId}`);
+  case 'MESSAGE':
+    jobName = 'action';
+    break;
+  case 'DELAY':
+    jobName = 'delay';
+    jobOptions = { delay: (node as DelayNode).duration_seconds * 1000 };
+    break;
+  case 'CONDITIONAL':
+    jobName = 'conditional';
+    break;
+  default:
+    throw new Error(`Unsupported node type '${(node as any).type}' for node ID ${currentNodeId}`);
   }
 
   const job = await queue.add(jobName, data, jobOptions);
@@ -56,8 +55,9 @@ export async function addJob(data: JobNode): Promise<string> {
  * @returns {Promise<string|null>} The job status or null if not found
  */
 export async function getJobStatus(runId: string): Promise<JobNodeResponseSchema | null> {
+  const queue = getQueue();
   const job = await queue.getJob(runId);
-  if (!job) return null;
+  if (!job) {return null;}
 
   // const active = await job.isActive();
   const completed = await job.isCompleted();

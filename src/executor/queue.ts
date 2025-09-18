@@ -13,7 +13,7 @@ let queue: Queue;
  */
 export function createQueue(name?: string): Queue {
   if (!queueName)
-    queueName = name || process.env.BULLMQ_QUEUE_NAME || 'journey';
+  {queueName = name || process.env.BULLMQ_QUEUE_NAME || 'journey';}
 
   const redisConfig = getRedisConfig();
   const options: QueueOptions = { connection: redisConfig };
@@ -28,7 +28,7 @@ export function createQueue(name?: string): Queue {
  */
 export function getQueue(): Queue {
   if (!queue)
-    queue = createQueue(queueName);
+  {queue = createQueue(queueName);}
 
   return queue;
 }
@@ -39,7 +39,7 @@ export function getQueue(): Queue {
  */
 export function getQueueName(): string {
   if (!queueName)
-    throw new Error('Queue name is not defined');
+  {throw new Error('Queue name is not defined');}
 
   return queueName;
 }

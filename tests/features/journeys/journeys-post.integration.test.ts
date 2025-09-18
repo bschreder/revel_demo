@@ -5,12 +5,17 @@ import { Journey } from '#src/models/node-types.js';
 import { connect, isConnected, disconnect } from '#src/db/mongodb-interface.js';
 import { ConnectOptions } from 'mongoose';
 import { JourneyIdResponse } from '#src/models/journey-schema.js';
+import { JourneyModel } from '#src/db/mongodb-schema.js';
+import { closeQueue } from '#src/executor/queue.js';
 
 
 
 describe('POST /journeys', () => {
   let fastifyInstance: FastifyInstance;
-  const dbName = 'revelai-test';
+  const workerId = Number(process.env.JEST_WORKER_ID || '1');
+  const PORT = 5600 + (workerId - 1);
+  const BASE_URL = `http://localhost:${PORT}`;
+  const dbName = process.env.MONGODB_DATABASE || 'revelai-test';
   const connectOptions: ConnectOptions = { dbName: dbName, autoIndex: false };
 
   beforeAll(async () => {
@@ -20,13 +25,21 @@ describe('POST /journeys', () => {
       await connect(connectOptions);
     }
 
-    // Start the server
-    fastifyInstance = await startServer();
+    // Ensure BullMQ queue uses a test-specific name
+    process.env.BULLMQ_QUEUE_NAME = `jobs-test-${process.env.JEST_WORKER_ID || '1'}`;
+
+    // Start the server on a unique port per Jest worker
+    fastifyInstance = await startServer(PORT);
   });
 
   afterAll(async () => {
     await fastifyInstance.close();
+    await closeQueue();
     await disconnect();
+  });
+
+  afterEach(async () => {
+    await JourneyModel.deleteMany({});
   });
 
   test('should create a new MESSAGE journey and return its id', async () => {
@@ -44,7 +57,7 @@ describe('POST /journeys', () => {
       ]
     };
 
-    const response = await fetch('http://localhost:5000/journeys', {
+    const response = await fetch(`${BASE_URL}/journeys`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(journey)
@@ -71,7 +84,7 @@ describe('POST /journeys', () => {
       ]
     };
 
-    const response = await fetch('http://localhost:5000/journeys', {
+    const response = await fetch(`${BASE_URL}/journeys`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(journey)
@@ -103,7 +116,7 @@ describe('POST /journeys', () => {
       ]
     };
 
-    const response = await fetch('http://localhost:5000/journeys', {
+    const response = await fetch(`${BASE_URL}/journeys`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(journey)

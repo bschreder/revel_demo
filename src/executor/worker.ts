@@ -3,19 +3,21 @@ import { getRedisConfig } from '#src/db/redis-interface.js';
 import pino from 'pino';
 import { JobName } from './job.js';
 import { actionProcessor, delayProcessor, conditionalProcessor } from './processor.js';
-import { getQueueName } from './queue.js';
+// Removed dependency on getQueueName to allow standalone worker start
 
 const logger = pino();
 let workerInstance: Worker | null = null;
+let queueEventsInstance: QueueEvents | null = null;
 
 /**
  * Starts a BullMQ Worker to process jobs from the queue.
  * Selects the processor based on the job name.
  * @returns {Worker} BullMQ Worker instance
  */
-export function startWorker(): Worker {
+export function startWorker(queueName?: string): Worker {
   const redisConfig = getRedisConfig();
   const options: WorkerOptions = { connection: redisConfig };
+  const effectiveQueueName = queueName || process.env.BULLMQ_QUEUE_NAME || 'journey';
 
   const processorMap: Record<JobName, (job: Job) => Promise<string>> = {
     action: actionProcessor,
@@ -24,12 +26,13 @@ export function startWorker(): Worker {
   };
   const processor = async (job: Job): Promise<string> => {
     const fn = processorMap[job.name as JobName];
-    if (!fn) 
-        throw new Error(`Unknown job name: ${job.name}`);
+    if (!fn) {
+      throw new Error(`Unknown job name: ${job.name}`);
+    }
     return fn(job);
   };
 
-  const worker = new Worker(getQueueName(), processor, options);
+  const worker = new Worker(effectiveQueueName, processor, options);
 
   worker.on('completed', (job) => {
     logger.info({ jobId: job.id }, 'Job completed');
@@ -45,7 +48,7 @@ export function startWorker(): Worker {
   });
 
   // Attach queue events for additional lifecycle logging
-  const queueEvents = new QueueEvents(getQueueName(), { connection: redisConfig });
+  const queueEvents = new QueueEvents(effectiveQueueName, { connection: redisConfig });
   queueEvents.on('waiting', ({ jobId }) => {
     logger.info({ jobId }, 'Job waiting');
   });
@@ -63,6 +66,7 @@ export function startWorker(): Worker {
   });
 
   workerInstance = worker;
+  queueEventsInstance = queueEvents;
   return worker;
 }
 
@@ -75,5 +79,10 @@ export async function stopWorker(): Promise<void> {
     logger.info('Shutting down BullMQ worker');
     await workerInstance.close();
     workerInstance = null;
+  }
+  if (queueEventsInstance) {
+    logger.info('Closing BullMQ QueueEvents');
+    await queueEventsInstance.close();
+    queueEventsInstance = null;
   }
 }

@@ -17,7 +17,11 @@ export function buildServer(): FastifyInstance {
         translateTime: 'HH:MM:ss Z',
         ignore: 'pid,hostname',
       },}
-    }})
+  }});
+  // Set up Zod type provider BEFORE routes are registered
+  fastify.setValidatorCompiler(validatorCompiler);
+  fastify.setSerializerCompiler(serializerCompiler);
+  fastify.withTypeProvider<ZodTypeProvider>();
   fastify.addHook('preHandler', authMiddleware);
   fastify.register(journeysRoutes);
   fastify.register(healthcheckRoutes);
@@ -31,11 +35,6 @@ export function buildServer(): FastifyInstance {
  */
 export async function startServer(port: number = 5000): Promise<FastifyInstance> {
   const fastify = buildServer();
-
-  // Set up Zod type provider
-  fastify.setValidatorCompiler(validatorCompiler);
-  fastify.setSerializerCompiler(serializerCompiler);
-  fastify.withTypeProvider<ZodTypeProvider>();
 
   // Start the server
   try {

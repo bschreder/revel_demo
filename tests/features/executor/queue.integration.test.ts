@@ -1,27 +1,30 @@
-import { createQueue, getQueue, getQueueName } from '#src/executor/queue.js';
+import { createQueue, getQueue, getQueueName, closeQueue } from '#src/executor/queue.js';
 import { Queue } from 'bullmq';
 
 describe('BullMQ Queue', () => {
+  const TEST_QUEUE = `jobs-test-${process.env.JEST_WORKER_ID || '1'}`;
+
+  afterEach(async () => {
+    await closeQueue();
+  });
+
   test('should create a BullMQ queue instance', () => {
-    const queueName = 'test-queue';
-    const queue = createQueue(queueName);
+    const queue = createQueue(TEST_QUEUE);
     expect(queue).toBeInstanceOf(Queue);
-    expect(queue.name).toBe(queueName);
+    expect(queue.name).toBe(TEST_QUEUE);
   });
 
   test('should return the same Queue instance from getQueue', () => {
-    const queueName = 'integration-queue';
-    const createdQueue = createQueue(queueName);
+    const createdQueue = createQueue(TEST_QUEUE);
     const retrievedQueue = getQueue();
     expect(retrievedQueue).toBe(createdQueue);
-    expect(retrievedQueue.name).toBe(queueName);
+    expect(retrievedQueue.name).toBe(TEST_QUEUE);
   });
 
   test('should return the correct queue name from getQueueName', () => {
-    const queueName = 'queue-name-test';
-    createQueue(queueName);
+    createQueue(TEST_QUEUE);
     const name = getQueueName();
-    expect(name).toBe(queueName);
+    expect(name).toBe(TEST_QUEUE);
   });
 
   test('should throw error if getQueueName is called before createQueue', () => {

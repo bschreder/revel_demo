@@ -4,7 +4,7 @@ import { JourneyModel } from '#src/db/mongodb-schema.js';
 import mongoose, { ConnectOptions } from 'mongoose';
 import type { Journey } from '#src/models/node-types.js';
 
-const dbName = 'revelai-test';
+const dbName = process.env.MONGODB_DATABASE || 'revelai-test';
 const connectOptions: ConnectOptions = { dbName: dbName, autoIndex: false };
 
 describe('MongoDB Interface Integration Tests', () => {
@@ -16,6 +16,10 @@ describe('MongoDB Interface Integration Tests', () => {
     }
 
     await JourneyModel.deleteMany({}); // Clean up before tests
+  });
+
+  afterEach(async () => {
+    await JourneyModel.deleteMany({});
   });
 
   afterAll(async () => {

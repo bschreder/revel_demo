@@ -13,7 +13,10 @@
     "lint": "eslint src tests --ext .ts --fix",
     "lint:strict": "eslint src tests --ext .ts --max-warnings=0 --fix",
     "test": "npm run build && jest --config jest.config.mjs --detectOpenHandles --watch",
-    "test:coverage": "jest --config jest.config.mjs --coverage",
+    "test:unit": "npm run build && jest --config jest.config.mjs --runInBand --testPathPatterns tests/.*\\.unit\\.test\\.ts$",
+    "test:integration": "npm run build && jest --config jest.config.mjs --runInBand --testPathPatterns tests/.*\\.integration\\.test\\.ts$",
+    "test:e2e": "npm run build && jest --config jest.config.mjs --runInBand --testPathPatterns tests/.*\\.e2e\\.test\\.ts$",
+    "test:coverage": "set E2E_WORKER_TESTS=0&& jest --config jest.config.mjs --coverage --runInBand",
     "test:ci": "jest --config jest.config.mjs --coverage --runInBand"
   },
   "repository": {

@@ -13,11 +13,11 @@ async function getJourneyAndNode<T extends JourneyNode>(
 ): Promise<{ journey: any; node: T }> {
   const journey = await getJourneyById(journeyId);
   if (!journey) 
-    throw new Error(`Journey with ID ${journeyId} not found`);
+  {throw new Error(`Journey with ID ${journeyId} not found`);}
 
   const node = journey.nodes.find((n: JourneyNode) => n.id === nodeId);
   if (!node || !typeGuard(node)) 
-    throw new Error(`Node with ID ${nodeId} not found or wrong type`);
+  {throw new Error(`Node with ID ${nodeId} not found or wrong type`);}
   
   return { journey, node };
 }
@@ -115,21 +115,21 @@ export async function conditionalProcessor(job: Job): Promise<string> {
   
   let result: boolean;
   switch (condition.operator) {
-    case '>':
-      result = patientValue > condition.value;
-      break;
-    case '<':
-      result = patientValue < condition.value;
-      break;
-    case '=':
-    case '==':
-      result = patientValue === condition.value;
-      break;
-    case '!=':
-      result = patientValue !== condition.value;
-      break;
-    default:
-      throw new Error(`Unsupported operator: ${condition.operator}`);
+  case '>':
+    result = patientValue > condition.value;
+    break;
+  case '<':
+    result = patientValue < condition.value;
+    break;
+  case '=':
+  case '==':
+    result = patientValue === condition.value;
+    break;
+  case '!=':
+    result = patientValue !== condition.value;
+    break;
+  default:
+    throw new Error(`Unsupported operator: ${condition.operator}`);
   }
 
   const nextNodeId = result

@@ -30,7 +30,9 @@ The project is built by a staff engineer use best nodejs and npm practices.
   - **Controllers:** Implement request-handling logic in `/src/controllers`.
   - **Services:** Contain business logic in `/src/services`.
   - **Models:** Define database schemas and types in `/src/models`.
-- **Middleware:** Place custom Fastify middleware in `/src/middleware`.
+  - **Middleware:** Place custom Fastify middleware in `/src/middleware`.
+  - **Database:** Handle database connections and configurations in `/src/db`.
+  - **Queues:** Manage BullMQ queue setup and processing in `/src/queues`.
 - **Tests:** Store tests in a parallel structure under `/tests`.
 
 ## Code Generation Guidelines
@@ -42,7 +44,7 @@ The project is built by a staff engineer use best nodejs and npm practices.
 - **Error Handling:** Implement robust error handling using standard HTTP status codes. Use Fastify's built-in error handling features.
 - **Logging:** Use the Fastify's default pino library for all application logging with the default console.log transport
 - **Security:** Always sanitize user input and prefer prepared statements in database queries to prevent injections.
-- **README.md**: Update the README file with instructions on how to set up and run the project, including any new dependencies or environment variables.
+- **README.md**: Update the README file with instructions on how to set up and run the project, including any new dependencies or environment variables. Include instructions for running tests and generating coverage reports. Also include a brief overview of the project architecture and folder structure.
 
 ## Testing Requirements
 

@@ -34,6 +34,7 @@ const config = {
   collectCoverageFrom: [
     'src/**/*.ts',
     '!src/**/*.d.ts',
+    '!src/index.ts',
   ],
   setupFiles: ['dotenv/config'],
   resolver: 'ts-jest-resolver',

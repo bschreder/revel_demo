@@ -1,6 +1,6 @@
 ### GET /journeys/runs/:runId
 
-GET http://localhost:5000/journeys/runs/21
+GET http://localhost:5000/journeys/runs/49
 Accept: application/json
 
 ### Example response

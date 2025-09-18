@@ -1,8 +1,5 @@
 # TODOs to enhance the project
 
-## Personal notes
-
-- verify `auto approve` for vs copilot is only set for this session or project
 
 ## Final video
 
@@ -18,6 +15,10 @@
 - Pass logger into controller
 
 - Fix lint errors
+
+- Improve endpoint completeness.  Add authenticated GET/LIST/UPDATE/DELETE endpoints as needed to help manage journeys (view/list/update/delete) operationally.
+
+- Persist run history and node transitions in MongoDb to improve observability and auditability.
 
 ## Security Enhancements
 

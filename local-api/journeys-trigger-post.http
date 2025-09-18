@@ -1,6 +1,6 @@
 ### Sample: Trigger a journey run for a patient
 
-POST http://localhost:5000/journeys/17acef88-2f97-4823-bcc8-660e099fbe38/trigger
+POST http://localhost:5000/journeys/5389f0f4-9627-427c-96a6-ab0408de127d/trigger
 Content-Type: application/json
 
 {

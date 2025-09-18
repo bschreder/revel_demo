@@ -1,5 +1,5 @@
 import { addJob, getJobStatus } from '#src/executor/job.js';
-import { createQueue } from '#src/executor/queue.js';
+import { createQueue, getQueue } from '#src/executor/queue.js';
 import { JobNode } from '#src/models/journey-schema.js';
 import { getJourneyById } from '#src/db/mongodb-interface.js';
 
@@ -7,6 +7,48 @@ import { getJourneyById } from '#src/db/mongodb-interface.js';
 jest.mock('#src/db/mongodb-interface.js', () => ({
   getJourneyById: jest.fn(),
 }));
+
+// Create a simple in-memory job store to simulate BullMQ without Redis
+type MockJob = {
+  id: string;
+  name: string;
+  data: any;
+  opts: any;
+  state: 'waiting' | 'completed' | 'failed' | 'active' | 'delayed';
+  isCompleted: () => Promise<boolean>;
+  isFailed: () => Promise<boolean>;
+  remove: () => Promise<void>;
+};
+
+const jobStore: Record<string, MockJob> = {};
+
+const mockQueue = {
+  add: jest.fn(async (name: string, data: any, opts?: any) => {
+    const id = Math.random().toString(36).slice(2);
+    const job: MockJob = {
+      id,
+      name,
+      data,
+      opts: opts || {},
+      state: opts?.delay ? 'delayed' : 'waiting',
+      isCompleted: async () => false,
+      isFailed: async () => false,
+      remove: async () => { delete jobStore[id]; },
+    };
+    jobStore[id] = job;
+    return job as unknown as { id: string };
+  }),
+  getJob: jest.fn(async (id: string) => jobStore[id] || null),
+};
+
+jest.mock('#src/executor/queue.js', () => {
+  return {
+    // preserve ESM default if any
+    __esModule: true,
+    createQueue: jest.fn(() => mockQueue),
+    getQueue: jest.fn(() => mockQueue),
+  };
+});
 
 const mockJourney = {
   id: 'journey-1',
@@ -20,6 +62,8 @@ const mockJourney = {
 describe('addJob', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    // clear job store between tests
+    for (const k of Object.keys(jobStore)) {delete jobStore[k];}
   });
 
   test('should add a job to the queue', async () => {
@@ -117,13 +161,13 @@ describe('addJob', () => {
       currentNodeId: 'node-4',
       patientContext: { id: 'patient-4', age: 60, language: 'es', condition: 'hip_replacement' },
     };
-    await expect(addJob(job)).rejects.toThrow("Unsupported node type 'UNKNOWN' for node ID node-4");
+    await expect(addJob(job)).rejects.toThrow('Unsupported node type \'UNKNOWN\' for node ID node-4');
   });
 });
 
 describe('getJobStatus', () => {
   test('should return null if job does not exist', async () => {
-    const queue = createQueue('journey');
+    createQueue('journey');
     const status = await getJobStatus('non-existent-job-id');
     expect(status).toBeNull();
   });
@@ -137,9 +181,12 @@ describe('getJobStatus', () => {
     };
     const jobId = await addJob(job);
     const status = await getJobStatus(jobId);
-    expect(typeof status).toBe('string');
-    
-    const queue = createQueue('journey');
+    expect(status).not.toBeNull();
+    expect(status?.runId).toBe(jobId);
+    expect(status?.status).toBe('in_progress');
+    expect(status?.journeyId).toBe(job.journeyId);
+    expect(status?.currentNodeId).toBe(job.currentNodeId);
+    const queue = getQueue();
     const addedJob = await queue.getJob(jobId);
     if (addedJob) {
       await addedJob.remove();
