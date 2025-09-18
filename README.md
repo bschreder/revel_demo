@@ -8,7 +8,7 @@
 
 ## Demo Video
 
-[![Watch the demo](docs/demo_journey-thumb.png)](docs/demo_journey.mp4)
+[![Watch the demo](docs/demo_journey.png)](docs/Demo_Journey.mp4)
 
 ## Quick start: run app and tests
 
